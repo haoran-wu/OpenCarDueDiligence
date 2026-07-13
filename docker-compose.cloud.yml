@@ -22,10 +22,12 @@ services:
 
   valkey:
     image: valkey/valkey:8.1.8-alpine
-    command: ["valkey-server", "--appendonly", "yes"]
+    # OCR envelopes contain encrypted copies of user documents. The reference
+    # broker is deliberately volatile: no RDB snapshots, no AOF, no host volume.
+    # Public deployments still need locator-only tasks before claiming an
+    # end-to-end deletion SLO.
+    command: ["valkey-server", "--save", "", "--appendonly", "no"]
     restart: unless-stopped
-    volumes:
-      - redis-data:/data
     healthcheck:
       test: ["CMD", "valkey-cli", "ping"]
       interval: 5s
@@ -213,5 +215,4 @@ services:
 
 volumes:
   postgres-data:
-  redis-data:
   minio-data:

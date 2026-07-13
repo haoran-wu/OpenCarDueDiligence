@@ -454,7 +454,7 @@ def create_app(
 
     api = FastAPI(
         title="OpenCarDueDiligence API",
-        version="0.1.0-alpha.2",
+        version="0.1.0-alpha.3",
         description=(
             "Evidence-backed US used-car due diligence. Deterministic rules calculate findings; "
             "LLMs, when configured, may explain but never override gates."

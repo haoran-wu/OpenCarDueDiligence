@@ -34,8 +34,10 @@ case data.
   license plate tied to a person, buyer/seller name or address, private message,
   marketplace cookie, provider credential, paid history report, or unredacted
   invoice in a public issue, pull request, log, screenshot, or fixture.
-- Raw cloud uploads are transient and must be deleted within the configured TTL
-  (one hour by default). Logs must contain opaque case/evidence IDs only.
+- S3 cloud originals are transient and target deletion within the configured
+  TTL (one hour by default). The alpha reference broker is volatile and carries
+  only encrypted OCR envelopes, but does not yet establish a whole-system
+  deletion SLO. Logs must contain opaque case/evidence IDs only.
 - VIN decode and transaction-context inputs use POST bodies. Do not put a VIN,
   identity comparison, title state, or other transaction context in a URL or
   query string, because access infrastructure commonly retains request URLs.

@@ -167,6 +167,24 @@ describe("web API client", () => {
     expect(apiErrorMessage(error, "en")).toContain("business rules");
   });
 
+  it("turns FastAPI field-validation arrays into a readable field error", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(new Response(JSON.stringify({
+      detail: [{
+        type: "enum",
+        loc: ["body", "vehicle", "fuel_type"],
+        msg: "Input should be a supported fuel type",
+      }],
+    }), { status: 422, headers: { "Content-Type": "application/json" } }));
+
+    await expect(api.createCase({
+      language: "en",
+      vehicle: { year: 2014, make: "MINI", model: "Cooper S", fuel_type: "gasoline" },
+    })).rejects.toMatchObject({
+      status: 422,
+      message: "vehicle.fuel_type: Input should be a supported fuel type",
+    });
+  });
+
   it("submits only the eligible confirmed adjustment and maps a successful offer response", async () => {
     const record = {
       ...demoCases[0],

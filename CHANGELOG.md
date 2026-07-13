@@ -4,6 +4,43 @@ All notable changes to OpenCarDueDiligence are documented here. The project is
 still alpha software and uses GitHub prereleases until its v1 acceptance gates
 are complete.
 
+## 0.1.0-alpha.3 - 2026-07-13
+
+### Added
+
+- a restrained production UI system with consistent SVG icons, semantic
+  decision colors, responsive buyer-workflow navigation, and a guided first-run
+  experience;
+- accessible modal focus trapping, Escape-to-close, focus restoration, and
+  mobile access to every case action;
+- readable FastAPI field-validation errors and explicit fuel-type selectors;
+- source-language disclosure for case findings that are intentionally not
+  machine-translated.
+
+### Changed
+
+- the overview is decision-first: current recommendation, three priority
+  checks, evidence coverage, repair exposure, market context, and the next safe
+  action are presented before secondary details;
+- evidence, inspection, negotiation, transaction, and comparison screens use
+  progressive disclosure and buyer-facing language instead of API terminology;
+- market ranges no longer imply that an offer boundary exists; opening, target,
+  and ceiling values appear only after those values have actually been
+  calculated;
+- the mobile shell now uses one compact application header and a no-overflow
+  bottom workflow bar down to 360 px.
+- local and cloud deployments now show distinct, truthful storage disclosures;
+  the cloud reference broker disables disk persistence and the documentation
+  scopes its 60-minute deletion target to S3 originals.
+
+### Boundaries
+
+- switching interface language does not machine-translate seller text,
+  evidence excerpts, or findings already stored in another source language;
+  the interface labels that boundary instead.
+- the volatile encrypted OCR queue remains a documented public-cloud
+  acceptance gap until task dispatch is locator-only or equivalently verified.
+
 ## 0.1.0-alpha.2 - 2026-07-13
 
 ### Added

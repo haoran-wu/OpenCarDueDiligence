@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "opencarduediligence-api"
-version = "0.1.0a2"
+version = "0.1.0a3"
 description = "Evidence-backed US used-car due diligence API"
 license = "AGPL-3.0-or-later"
 requires-python = ">=3.11"

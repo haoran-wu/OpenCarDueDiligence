@@ -9,15 +9,16 @@ uvicorn app.main:app --reload --port 8000
 pytest
 ```
 
-Public JSON uses camelCase and accepts camelCase or snake_case. Raw cloud
-artifacts have a 60-minute maximum deletion window by default; reports only
+Public JSON uses camelCase and accepts camelCase or snake_case. S3 cloud
+originals have a 60-minute maximum deletion target by default; reports only
 reference redacted structured evidence. The encrypted `.ocdd` export excludes
 attachments by default. In the reference Compose deployment, S3 access expires
 at 55 minutes and an API-independent sidecar scans every 60 seconds, normally
 deleting by minute 56 and leaving four minutes of operational buffer. Treat an
-unhealthy purger or
-object-store outage as a retention incident; no software can promise physical
-deletion while storage is unavailable.
+unhealthy purger or object-store outage as a retention incident. The OCR broker
+uses encrypted envelopes and disables disk persistence, but volatile messages
+can remain until delivery or restart; this alpha therefore does not claim a
+whole-system 60-minute erasure guarantee.
 
 Report findings resolve each stable evidence ID through the response
 `evidenceIndex` and render the available provider, evidence label, page, and

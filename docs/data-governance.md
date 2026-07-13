@@ -79,6 +79,12 @@ without such a layer is not a supported public configuration. Local cases use
   dedicated bucket/prefix and verify these controls before accepting uploads.
 - Purger and health logs disclose only aggregate counts and exception class
   names, never case IDs, object keys, filenames, or object contents.
+- OCR task envelopes are encrypted before entering the reference Valkey
+  broker. That broker has snapshots, AOF, and its data volume disabled, but an
+  envelope can remain in volatile memory until consumed, revoked, or the
+  broker restarts. The 60-minute claim above therefore applies to S3 originals
+  only. Public cloud acceptance requires locator-only task dispatch (or an
+  independently verified equivalent) before claiming whole-system erasure.
 
 ## Cloud ingestion minimization
 

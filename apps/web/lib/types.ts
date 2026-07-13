@@ -196,6 +196,8 @@ export interface DiagnosticSummary {
 
 export interface CaseRecord {
   id: string;
+  /** Language used for case-generated findings; source evidence is never auto-translated. */
+  language?: Language;
   name: string;
   status: CaseStatus;
   decision: Decision;

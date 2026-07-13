@@ -103,22 +103,22 @@ def main() -> int:
             failures.append(f"expected license metadata missing from {relative}")
 
     version_expectations = (
-        ("package.json", '"version": "0.1.0-alpha.2"'),
-        ("apps/web/package.json", '"version": "0.1.0-alpha.2"'),
-        ("apps/extension/package.json", '"version": "0.1.0-alpha.2"'),
-        ("package-lock.json", '"version": "0.1.0-alpha.2"'),
-        ("CHANGELOG.md", "## 0.1.0-alpha.2 - 2026-07-13"),
-        ("services/api/app/main.py", 'version="0.1.0-alpha.2"'),
-        ("apps/extension/public/manifest.json", '"version_name": "0.1.0-alpha.2"'),
-        ("apps/extension/public/manifest.json", '"version": "0.1.0.2"'),
-        ("packages/contracts/package.json", '"version": "0.1.0-alpha.2"'),
-        ("packages/plugin-sdk/package.json", '"version": "0.1.0-alpha.2"'),
-        ("services/api/pyproject.toml", 'version = "0.1.0a2"'),
-        ("services/worker/pyproject.toml", 'version = "0.1.0a2"'),
-        ("services/obd-bridge/pyproject.toml", 'version = "0.1.0a2"'),
-        ("services/obd-bridge/obd_bridge/__init__.py", '__version__ = "0.1.0-alpha.2"'),
-        ("services/obd-bridge/obd_bridge/service.py", 'version="0.1.0-alpha.2"'),
-        ("CITATION.cff", "version: 0.1.0-alpha.2"),
+        ("package.json", '"version": "0.1.0-alpha.3"'),
+        ("apps/web/package.json", '"version": "0.1.0-alpha.3"'),
+        ("apps/extension/package.json", '"version": "0.1.0-alpha.3"'),
+        ("package-lock.json", '"version": "0.1.0-alpha.3"'),
+        ("CHANGELOG.md", "## 0.1.0-alpha.3 - 2026-07-13"),
+        ("services/api/app/main.py", 'version="0.1.0-alpha.3"'),
+        ("apps/extension/public/manifest.json", '"version_name": "0.1.0-alpha.3"'),
+        ("apps/extension/public/manifest.json", '"version": "0.1.0.3"'),
+        ("packages/contracts/package.json", '"version": "0.1.0-alpha.3"'),
+        ("packages/plugin-sdk/package.json", '"version": "0.1.0-alpha.3"'),
+        ("services/api/pyproject.toml", 'version = "0.1.0a3"'),
+        ("services/worker/pyproject.toml", 'version = "0.1.0a3"'),
+        ("services/obd-bridge/pyproject.toml", 'version = "0.1.0a3"'),
+        ("services/obd-bridge/obd_bridge/__init__.py", '__version__ = "0.1.0-alpha.3"'),
+        ("services/obd-bridge/obd_bridge/service.py", 'version="0.1.0-alpha.3"'),
+        ("CITATION.cff", "version: 0.1.0-alpha.3"),
     )
     for relative, token in version_expectations:
         if token not in _read(relative):

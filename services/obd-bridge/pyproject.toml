@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ocdd-obd-bridge"
-version = "0.1.0a2"
+version = "0.1.0a3"
 description = "Read-only local BLE ELM327 bridge for OpenCarDueDiligence"
 license = "AGPL-3.0-or-later"
 requires-python = ">=3.11"

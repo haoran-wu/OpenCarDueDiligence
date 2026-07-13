@@ -19,6 +19,7 @@ describe("mobile case navigation", () => {
     expect(dashboard).toContain('aria-label={language === "zh-CN" ? "选择候选车辆案件" : "Select vehicle case"}');
     expect(dashboard).toContain('className="mobile-new-case"');
     expect(dashboard).toContain("mobileCaseLabel(item.vehicle, index, language)");
+    expect(dashboard).toContain('aria-label={language === "zh-CN" ? "添加车源" : "Add listing"}');
   });
 
   it("exposes the controls at mobile width without a fixed content width", () => {
@@ -27,6 +28,8 @@ describe("mobile case navigation", () => {
     const mobileCss = css.slice(mobileStart, mobileEnd);
     expect(mobileCss).toContain(".mobile-case-controls { width: 100%; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto;");
     expect(mobileCss).toContain(".mobile-case-controls label { min-width: 0;");
+    expect(mobileCss).toContain(".sidebar { position: static; height: 0;");
+    expect(mobileCss).toContain("grid-template-columns: repeat(6, minmax(0, 1fr))");
     expect(mobileCss).not.toMatch(/\.mobile-case-controls[^}]*display:\s*none/);
   });
 });

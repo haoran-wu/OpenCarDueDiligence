@@ -44,6 +44,28 @@ function caseAccess(caseId: string, explicit?: CaseAccess): CaseAccess | undefin
   return explicit || caseAccessFor(caseId);
 }
 
+function readableApiDetail(payload: unknown): string | undefined {
+  if (!payload || typeof payload !== "object") return undefined;
+  const detail = (payload as { detail?: unknown }).detail;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) {
+    const messages = detail.flatMap((item) => {
+      if (!item || typeof item !== "object") return [];
+      const message = (item as { msg?: unknown }).msg;
+      const location = (item as { loc?: unknown }).loc;
+      if (typeof message !== "string") return [];
+      const field = Array.isArray(location) ? location.filter((part) => part !== "body").join(".") : "";
+      return [`${field ? `${field}: ` : ""}${message}`];
+    });
+    return messages.length ? messages.join("; ") : undefined;
+  }
+  if (detail && typeof detail === "object") {
+    const message = (detail as { message?: unknown; msg?: unknown }).message || (detail as { msg?: unknown }).msg;
+    if (typeof message === "string") return message;
+  }
+  return undefined;
+}
+
 async function apiFetchWithResponse<T>(path: string, init?: RequestInit, access?: CaseAccess): Promise<{ data: T; response: Response }> {
   const response = await fetch(`${getApiBase()}${path}`, {
     ...init,
@@ -53,7 +75,7 @@ async function apiFetchWithResponse<T>(path: string, init?: RequestInit, access?
   const payload = await response.json().catch(() => undefined);
   if (!response.ok) {
     throw new ApiError(
-      (payload as { detail?: string } | undefined)?.detail || `Request failed (${response.status})`,
+      readableApiDetail(payload) || `Request failed (${response.status})`,
       response.status,
       payload,
     );

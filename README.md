@@ -16,6 +16,8 @@ steps without turning an LLM into the source of truth.
 > vehicle. See [`docs/v1-readiness.md`](docs/v1-readiness.md) for the remaining
 > human, hardware, deployment, licensing, and security acceptance gates.
 
+![OpenCarDueDiligence buyer workspace](docs/images/open-car-workspace.png)
+
 The project is useful as a structured second opinion: it keeps an evidence
 ledger, exposes what is still unknown, turns codes and symptoms into tests
 rather than parts verdicts, and produces a reviewable inspection, negotiation,
@@ -130,8 +132,8 @@ workbench—not an automatic “paste a listing and receive a buy verdict” age
 
 The quickstart stack does not upload documents to an OpenCarDueDiligence cloud
 service. Structured cases stay in a local Docker volume; attachment blobs are
-wrapped in AES-GCM envelopes and have a one-hour transient-artifact TTL by
-default. Web and API ports remain loopback-only because local mode does not
+wrapped in AES-GCM envelopes and remain there until the case or Docker volume
+is deleted. Web and API ports remain loopback-only because local mode does not
 have remote-user authentication. `stop` preserves the local volume, while the
 explicit `stop --delete-data` command removes it. Deleting `.env` alone does
 not delete case data.
@@ -189,8 +191,18 @@ put this token in URLs, analytics, logs, screenshots, or an unencrypted export.
 The Web app is API-first and shows loading, empty, and error states without
 inserting sample vehicles. `NEXT_PUBLIC_OCDD_ENABLE_DEMO=true` is an explicit
 UI-development-only opt-in. The reference browser client stores capabilities
-by opaque case ID in session storage and sends them only in the request header;
-closing the browser session removes that recovery copy.
+by opaque case ID in session storage. Single-case requests use
+`X-OCDD-Case-Token`; multi-case comparison sends the required
+case-to-capability map in the HTTPS request body. Tokens are never placed in a
+URL, and closing the browser session removes the recovery copy.
+
+The reference cloud Valkey broker disables snapshots and AOF and has no data
+volume, so encrypted OCR envelopes are not deliberately written to disk. An
+envelope can still remain in volatile broker memory until it is consumed,
+revoked, or the broker restarts. This alpha therefore applies the configured
+60-minute deletion target only to S3 transient originals, not whole-system
+erasure. Public cloud acceptance remains blocked on locator-only asynchronous
+processing or an independently verified equivalent retention control.
 
 Development without Docker:
 
