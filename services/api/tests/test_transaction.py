@@ -78,10 +78,9 @@ def test_nj_buyer_with_ny_title_gets_origin_transport_and_nj_registration(monkey
         for step in plan.steps
         if step.official_url
     }
-    assert "dmv.ny.gov" in official_hosts
-    assert "www.nj.gov" in official_hosts
-    assert official_hosts <= {"dmv.ny.gov", "www.nj.gov"}
-    assert urlsplit("https://www.nj.gov.attacker.example/mvc").hostname not in official_hosts
+    assert official_hosts == {"dmv.ny.gov", "www.nj.gov"}
+    lookalike_host = urlsplit("https://www.nj.gov.attacker.example/mvc").hostname
+    assert lookalike_host != "www.nj.gov"
     assert any("await maintainer human signoff" in warning for warning in plan.warnings)
     assert all(step.requires_confirmation for step in plan.steps if step.verified_as_of)
     assert [step.order for step in plan.steps] == sorted(step.order for step in plan.steps)
