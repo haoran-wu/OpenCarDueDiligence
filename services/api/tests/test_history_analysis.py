@@ -45,9 +45,9 @@ def test_history_extracts_separate_safety_emissions_and_owner_events() -> None:
     assert "ownership_summary" in event_types
 
 
-def test_carfax_fixture_rejects_summary_warranty_and_annual_mileage() -> None:
-    text = (FIXTURE_DIR / "carfax_history_sanitized.txt").read_text()
-    events = extract_history_events(text, "sanitized-carfax-page")
+def test_synthetic_history_rejects_summary_warranty_and_annual_mileage() -> None:
+    text = (FIXTURE_DIR / "history_report_synthetic.txt").read_text()
+    events = extract_history_events(text, "synthetic-history-page")
 
     assert any(
         event.event_date == date(2014, 5, 2) and event.mileage == 13_000
@@ -90,10 +90,10 @@ def test_carfax_fixture_rejects_summary_warranty_and_annual_mileage() -> None:
         content_sha256="a" * 64,
     )
     evidence = Evidence(
-        id="sanitized-carfax-page",
+        id="synthetic-history-page",
         source_id=source.id,
         kind=EvidenceKind.HISTORY_REPORT,
-        label="De-identified regression fixture",
+        label="Wholly synthetic regression fixture",
     )
     result = analyze_case(
         CaseContext(sources=[source], evidence=[evidence], history=events)
@@ -103,8 +103,8 @@ def test_carfax_fixture_rejects_summary_warranty_and_annual_mileage() -> None:
     }
 
 
-def test_carfax_owner_group_headers_do_not_create_an_owner_count() -> None:
-    pages = (FIXTURE_DIR / "carfax_owner_summary_sanitized.txt").read_text().split("\f")
+def test_synthetic_owner_group_headers_do_not_create_an_owner_count() -> None:
+    pages = (FIXTURE_DIR / "history_owner_summary_synthetic.txt").read_text().split("\f")
     events = [
         event
         for page_number, page in enumerate(pages, start=1)
