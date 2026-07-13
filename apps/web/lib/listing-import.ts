@@ -14,6 +14,7 @@ export interface ListingImportForm {
   reference_kind: "asking" | "sold" | "reference";
   listed_date: string;
   distance_miles: string;
+  vin: string;
   year: string;
   make: string;
   model: string;
@@ -35,6 +36,7 @@ function stringValue(value: string | number | undefined): string {
 
 function vehicleFields(vehicle: VehicleSpec) {
   return {
+    vin: vehicle.vin || "",
     year: stringValue(vehicle.year),
     make: vehicle.make || "",
     model: vehicle.model || "",
@@ -83,6 +85,7 @@ export function comparableListingImportForm(record: CaseRecord): ListingImportFo
     reference_kind: record.listing.reference_kind || "asking",
     listed_date: "",
     distance_miles: "",
+    vin: "",
     year: "",
     make: "",
     model: "",
@@ -103,9 +106,10 @@ export function copyResolvedTargetConfiguration(
   form: ListingImportForm,
   vehicle: VehicleSpec,
 ): ListingImportForm {
+  const { vin: _targetVin, ...configuration } = vehicleFields(vehicle);
   return {
     ...form,
-    ...vehicleFields(vehicle),
+    ...configuration,
     copied_configuration: true,
   };
 }
@@ -140,6 +144,7 @@ export function listingImportPayload(form: ListingImportForm): ListingImportInpu
     location: optionalText(form.location),
     listed_at: form.listed_date ? `${form.listed_date}T12:00:00.000Z` : undefined,
     distance_miles: optionalNumber(form.distance_miles),
+    vin: optionalText(form.vin) ? form.vin.trim().toUpperCase() : undefined,
     year: optionalNumber(form.year),
     make: optionalText(form.make),
     model: optionalText(form.model),
@@ -162,6 +167,7 @@ export function listingImportPayload(form: ListingImportForm): ListingImportInpu
 
 export function listingImportVehicle(payload: ListingImportInput): VehicleSpec {
   const vehicle: VehicleSpec = {};
+  if (payload.vin !== undefined) vehicle.vin = payload.vin;
   if (payload.year !== undefined) vehicle.year = payload.year;
   if (payload.make !== undefined) vehicle.make = payload.make;
   if (payload.model !== undefined) vehicle.model = payload.model;

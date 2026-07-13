@@ -4,10 +4,11 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { ComparisonRisk, ComparisonRow } from "@ocdd/contracts";
 import { api, apiErrorMessage, isApiConnectionFailure, isApiError } from "@/lib/api";
 import { accessTokenMap, caseAccessFor, forgetCaseAccess, knownCaseAccesses, rememberCaseAccess } from "@/lib/case-access";
-import { explicitDemoCases } from "@/lib/case-record";
+import { explicitDemoCases, hasGenericPowertrainCoverage } from "@/lib/case-record";
 import { comparisonRiskClass, comparisonRiskFromLevel } from "@/lib/compare";
 import { demoCases } from "@/lib/demo";
 import { mobileCaseLabel } from "@/lib/mobile-case-label";
+import { applyDecodedVehicleToForm, isValidModernVin, normalizeVinInput, vehicleSpecForCase } from "@/lib/new-case";
 import { calculateNegotiation, eligibleNegotiationAdjustments, negotiationErrorMessage, shouldShowNegotiationArithmetic } from "@/lib/negotiation";
 import {
   comparableListingImportForm,
@@ -31,10 +32,12 @@ import type {
   CheckStatus,
   InspectionStage,
   Language,
+  NegotiationRequest,
   NegotiationResponse,
   RiskLevel,
   TransactionContextInput,
   TransactionPlan,
+  VehicleSpec,
 } from "@/lib/types";
 import { ServiceWorkerRegister } from "./ServiceWorkerRegister";
 
@@ -279,6 +282,18 @@ export function Dashboard() {
     setCases((items) => items.map((item) => item.id === record.id ? record : item));
   }
 
+  function handleCaseDeleted(caseId: string) {
+    forgetCaseAccess(caseId);
+    const remaining = cases.filter((item) => item.id !== caseId);
+    setCases(remaining);
+    if (activeCaseId === caseId || activeCase?.id === caseId) {
+      setActiveCaseId(remaining[0]?.id || "");
+      setActiveTab("overview");
+    }
+    setArchiveOpen(false);
+    notify(language === "zh-CN" ? "案件及其本地附件已删除" : "Case and its local artifacts deleted");
+  }
+
   async function refreshActiveCase(silent = false) {
     if (!activeCase || dataMode === "demo") return;
     try {
@@ -436,7 +451,7 @@ export function Dashboard() {
       </main>
 
       {importOpen && activeCase && <ImportModal record={activeCase} language={language} onClose={() => setImportOpen(false)} patchCase={patchActiveCase} notify={notify} setConnected={(value) => setDataMode(value ? "api" : "offline")} isDemo={dataMode === "demo"} onRefresh={() => void refreshActiveCase(true)} />}
-      {archiveOpen && <CaseArchiveModal activeCase={activeCase} dataMode={dataMode} language={language} onClose={() => setArchiveOpen(false)} onImported={(record) => { setCases((items) => [record, ...items.filter((item) => item.id !== record.id)]); setActiveCaseId(record.id); setActiveTab("overview"); setDataMode("api"); setLoadState("ready"); setArchiveOpen(false); notify(language === "zh-CN" ? "加密案件已导入" : "Encrypted case imported"); }} />}
+      {archiveOpen && <CaseArchiveModal activeCase={activeCase} dataMode={dataMode} language={language} onClose={() => setArchiveOpen(false)} onDeleted={handleCaseDeleted} onImported={(record) => { setCases((items) => [record, ...items.filter((item) => item.id !== record.id)]); setActiveCaseId(record.id); setActiveTab("overview"); setDataMode("api"); setLoadState("ready"); setArchiveOpen(false); notify(language === "zh-CN" ? "加密案件已导入" : "Encrypted case imported"); }} />}
       {newCaseOpen && <NewCaseModal language={language} onClose={() => setNewCaseOpen(false)} onCreate={(record) => { setCases((items) => [...items, record]); setActiveCaseId(record.id); setNewCaseOpen(false); setLoadState("ready"); }} setConnected={(value) => setDataMode(value ? "api" : "offline")} isDemo={dataMode === "demo"} />}
       {toast && <div className="toast" role="status">{toast}</div>}
     </div>
@@ -500,7 +515,7 @@ function Overview({ record, language, t, onGoEvidence, onRefresh, isDemo, notify
       <section className="card span-2 obd-card">
         <div className="card-heading"><div><span className="eyebrow">04 / DIAGNOSTICS</span><h2>{t.obd}</h2></div><span className={`readiness ${record.diagnostics.readiness}`}>{record.diagnostics.readiness.replace("_", " ")}</span></div>
         <div className="obd-layout">
-          <div><h3>{language === "zh-CN" ? "本次扫描覆盖" : "Covered by this scan"}</h3>{record.diagnostics.coverage.length ? record.diagnostics.coverage.map((item) => <span className="token pass" key={item}>✓ {item}</span>) : <span className="token unknown">— {t.unknown}</span>}<h3 className="token-heading">DTC</h3>{record.diagnostics.codes.length ? record.diagnostics.codes.map((item) => <span className="token warn" key={item}>! {item}</span>) : <span className="token unknown">— none reported</span>}</div>
+          <div><h3>{language === "zh-CN" ? "本次扫描覆盖" : "Covered by this scan"}</h3>{record.diagnostics.coverage.length ? record.diagnostics.coverage.map((item) => <span className="token pass" key={item}>✓ {item}</span>) : <span className="token unknown">— {t.unknown}</span>}<h3 className="token-heading">DTC</h3>{record.diagnostics.codes.length ? record.diagnostics.codes.map((item) => <span className="token warn" key={item}>! {item}</span>) : hasGenericPowertrainCoverage(record.diagnostics.coverage) ? <span className="token unknown">— {language === "zh-CN" ? "本次普通动力系统扫描未报告 DTC" : "No generic powertrain DTC reported in this scan"}</span> : <span className="token unknown">— {language === "zh-CN" ? "尚无普通动力系统 DTC 扫描数据" : "No generic powertrain DTC scan data"}</span>}</div>
           <div><h3>{language === "zh-CN" ? "没有覆盖" : "Not covered"}</h3>{record.diagnostics.not_covered.map((item) => <span className="token unknown" key={item}>? {item}</span>)}</div>
           <div className="obd-warning"><strong>Important</strong><p>{t.noCodeWarning}</p></div>
         </div>
@@ -589,7 +604,7 @@ function EvidenceView({ record, language, t, onRefresh, isDemo, notify, setConne
         <div className="evidence-table" role="table">
           <div className="table-head" role="row"><span>Source</span><span>{language === "zh-CN" ? "引用" : "Reference"}</span><span>Status</span><span>Date</span></div>
           {record.evidence.map((item) => <div className="table-row" role="row" key={item.id}><div><strong>{item.label}</strong><small>{item.source}</small></div><span>{item.reference || "—"}</span><span className={`evidence-status ${item.status}`}>{item.status}</span><span>{item.captured_at.slice(0, 10)}</span></div>)}
-          {record.evidence.length === 0 && <div className="empty-state">{language === "zh-CN" ? "还没有证据。导入 listing、CARFAX 或检查记录。" : "No evidence yet. Import a listing, history report, or inspection."}</div>}
+          {record.evidence.length === 0 && <div className="empty-state">{language === "zh-CN" ? "还没有证据。导入车源、可选的车辆历史报告或检查记录。" : "No evidence yet. Import a listing, optional vehicle-history report, or inspection."}</div>}
         </div>
       </section>
       <ArtifactUploader record={record} language={language} onRefresh={onRefresh} isDemo={isDemo} notify={notify} setConnected={setConnected} />
@@ -664,7 +679,7 @@ function ArtifactUploader({ record, language, onRefresh, isDemo, notify, setConn
   return <section className="card span-2 evidence-uploader">
     <div className="card-heading"><div><span className="eyebrow">ARTIFACT INGEST</span><h2>{language === "zh-CN" ? "上传报告、title、发票或聊天" : "Upload report, title, receipt, or chat"}</h2></div><span className="source-stamp">PDF text first · OCR fallback</span></div>
     <form className="artifact-form" onSubmit={submit}>
-      <div className="form-pair"><label>Kind<select value={kind} onChange={(event) => setKind(event.target.value)}><option value="history_report">CARFAX / history report</option><option value="title">Title</option><option value="lien_release">Lien release</option><option value="receipt">Repair receipt</option><option value="state_inspection">State inspection</option><option value="seller_message">Seller message</option><option value="photo">Photo / screenshot</option><option value="ppi">PPI</option><option value="other">Other</option></select></label><label>Label<input value={label} onChange={(event) => setLabel(event.target.value)} placeholder="CARFAX page set" /></label></div>
+      <div className="form-pair"><label>Kind<select value={kind} onChange={(event) => setKind(event.target.value)}><option value="history_report">{language === "zh-CN" ? "车辆历史报告（可选）" : "Vehicle-history report (optional)"}</option><option value="title">Title</option><option value="lien_release">Lien release</option><option value="receipt">Repair receipt</option><option value="state_inspection">State inspection</option><option value="seller_message">Seller message</option><option value="photo">Photo / screenshot</option><option value="ppi">PPI</option><option value="other">Other</option></select></label><label>Label<input value={label} onChange={(event) => setLabel(event.target.value)} placeholder={language === "zh-CN" ? "例如：历史报告第 1–5 页" : "e.g. history report pages 1–5"} /></label></div>
       {kind === "title" && <>
         <div className="form-pair">
           <label>{language === "zh-CN" ? "Title 上的车主姓名" : "Titled owner legal name"}<input autoComplete="off" value={titleOwnerName} onChange={(event) => setTitleOwnerName(event.target.value)} /></label>
@@ -752,7 +767,8 @@ function InspectionView({ record, language, t, patchCase, notify, setConnected, 
 
 function NegotiationView({ record, language, t, notify, setConnected, isDemo }: { record: CaseRecord; language: Language; t: typeof copy[Language]; notify: (text: string) => void; setConnected: (value: boolean) => void; isDemo: boolean }) {
   const [phase, setPhase] = useState<"initial_contact" | "conditional_offer" | "post_ppi" | "walk_away">("initial_contact");
-  const [budget, setBudget] = useState(6500);
+  const [budget, setBudget] = useState(record.all_in_budget ? String(record.all_in_budget) : "");
+  const [mandatoryCosts, setMandatoryCosts] = useState("");
   const [sellerFloor, setSellerFloor] = useState(record.valuation.ceiling || 0);
   const [result, setResult] = useState<NegotiationResponse>();
   const [busy, setBusy] = useState(false);
@@ -773,7 +789,28 @@ function NegotiationView({ record, language, t, notify, setConnected, isDemo }: 
   }
 
   async function generate() {
-    const request = { phase, language, asking_price: record.listing.asking_price, market_baseline: record.valuation.market_median || record.listing.asking_price, all_in_budget: budget, evidence_coverage: record.coverage_percent, adjustments, buyer_mandatory_costs: 500, seller_floor: sellerFloor || undefined };
+    const askingPrice = record.listing.asking_price;
+    const marketBaseline = record.valuation.market_median;
+    if (phase !== "initial_contact" && (askingPrice === undefined || marketBaseline === undefined)) {
+      notify(language === "zh-CN" ? "先导入目标车源价格和足够的可比车，再生成价格边界。" : "Import the target asking price and enough comparable listings before generating a price boundary.");
+      return;
+    }
+    const budgetValue = Number(budget);
+    const mandatoryCostsValue = Number(mandatoryCosts);
+    if (phase !== "initial_contact" && (
+      !budget
+      || !mandatoryCosts
+      || !Number.isFinite(budgetValue)
+      || budgetValue <= 0
+      || !Number.isFinite(mandatoryCostsValue)
+      || mandatoryCostsValue < 0
+    )) {
+      notify(language === "zh-CN" ? "请先确认总预算，以及税费、登记和合法运输等买家固有成本；系统不会使用隐藏默认值。" : "Confirm the all-in budget and buyer-side tax, registration, and legal-transport costs first; the system uses no hidden defaults.");
+      return;
+    }
+    const request: NegotiationRequest = phase === "initial_contact"
+      ? { phase, language, evidence_coverage: record.coverage_percent, adjustments: [] }
+      : { phase, language, asking_price: askingPrice, market_baseline: marketBaseline, all_in_budget: budgetValue, evidence_coverage: record.coverage_percent, adjustments, buyer_mandatory_costs: mandatoryCostsValue, seller_floor: sellerFloor || undefined };
     setBusy(true);
     try {
       if (isDemo) setResult(calculateNegotiation(request));
@@ -791,7 +828,7 @@ function NegotiationView({ record, language, t, notify, setConnected, isDemo }: 
 
   return (
     <div className="negotiation-layout">
-      <section className="card negotiation-form"><div className="card-heading"><div><span className="eyebrow">DETERMINISTIC BOUNDARY</span><h2>{t.negotiate}</h2></div></div><label>Phase<select value={phase} onChange={(event) => { setPhase(event.target.value as typeof phase); setResult(undefined); }}><option value="initial_contact">Initial contact</option><option value="conditional_offer">Conditional offer</option><option value="post_ppi">Post-PPI</option><option value="walk_away">Walk away / wait</option></select></label>{phase === "initial_contact" ? <div className="privacy-callout">{language === "zh-CN" ? "初次联系只生成 VIN、title、保养、当前故障和 PPI 问题；不需要估值，也不会生成报价。" : "Initial contact asks for the VIN, title, maintenance, current issues, and PPI permission. It does not need a valuation or generate an offer."}</div> : <><div className="form-pair"><label>All-in budget<input type="number" value={budget} onChange={(event) => setBudget(Number(event.target.value))} /></label><label>Seller floor<input type="number" value={sellerFloor} onChange={(event) => setSellerFloor(Number(event.target.value))} /></label></div><div className="deductions"><h3>{language === "zh-CN" ? "有证据的调整" : "Evidence-backed adjustments"}</h3>{eligibleAdjustments.length ? eligibleAdjustments.map((item) => <div className="negotiation-adjustment-row" key={item.finding_id || item.label}><label><input type="checkbox" checked={!item.finding_id || !excludedFindingIds.has(item.finding_id)} onChange={() => item.finding_id && toggleAdjustment(item.finding_id)} /><span>{item.label}</span></label><strong>{!item.finding_id || !excludedFindingIds.has(item.finding_id) ? `−${money(item.amount)}` : language === "zh-CN" ? "未计入" : "Excluded"}</strong></div>) : <div><span>{language === "zh-CN" ? "尚无可扣除的确认项目" : "No documented adjustments yet"}</span><strong>—</strong></div>}{inspectionOnlyFindings.length > 0 && <div className="inspection-only-note"><span>{language === "zh-CN" ? `待检查（不扣款）：${inspectionOnlyFindings.map((item) => item.title).join("；")}` : `Needs inspection (not deducted): ${inspectionOnlyFindings.map((item) => item.title).join("; ")}`}</span><strong>{language === "zh-CN" ? "待确认" : "Unconfirmed"}</strong></div>}<div><span>{language === "zh-CN" ? "证据准备金" : "Evidence reserve"}</span><strong>{record.coverage_percent}% coverage</strong></div></div></>}<button className="button primary full" onClick={generate} disabled={busy}>{busy ? "…" : t.generate}</button></section>
+      <section className="card negotiation-form"><div className="card-heading"><div><span className="eyebrow">DETERMINISTIC BOUNDARY</span><h2>{t.negotiate}</h2></div></div><label>Phase<select value={phase} onChange={(event) => { setPhase(event.target.value as typeof phase); setResult(undefined); }}><option value="initial_contact">Initial contact</option><option value="conditional_offer">Conditional offer</option><option value="post_ppi">Post-PPI</option><option value="walk_away">Walk away / wait</option></select></label>{phase === "initial_contact" ? <div className="privacy-callout">{language === "zh-CN" ? "初次联系只生成 VIN、title、保养、当前故障和 PPI 问题；不需要估值，也不会生成报价。" : "Initial contact asks for the VIN, title, maintenance, current issues, and PPI permission. It does not need a valuation or generate an offer."}</div> : <><div className="form-pair"><label>{language === "zh-CN" ? "总预算（美元）" : "All-in budget (USD)"}<input required min="1" type="number" value={budget} onChange={(event) => setBudget(event.target.value)} /></label><label>{language === "zh-CN" ? "卖家底价（可选）" : "Seller floor (optional)"}<input min="0" type="number" value={sellerFloor} onChange={(event) => setSellerFloor(Number(event.target.value))} /></label></div><label>{language === "zh-CN" ? "买家固有成本：税、登记、合法运输等（美元）" : "Buyer-side tax, registration, legal transport, etc. (USD)"}<input required min="0" type="number" value={mandatoryCosts} onChange={(event) => setMandatoryCosts(event.target.value)} /></label><div className="privacy-callout">{language === "zh-CN" ? "这些成本只限制你的 all-in 最高价，不会被伪装成车辆缺陷向卖家压价。请填 0 或你的实际估算，不能留空。" : "These costs constrain your all-in ceiling; they are never presented to the seller as vehicle defects. Enter 0 or your reviewed estimate—do not leave it blank."}</div><div className="deductions"><h3>{language === "zh-CN" ? "有证据的调整" : "Evidence-backed adjustments"}</h3>{eligibleAdjustments.length ? eligibleAdjustments.map((item) => <div className="negotiation-adjustment-row" key={item.finding_id || item.label}><label><input type="checkbox" checked={!item.finding_id || !excludedFindingIds.has(item.finding_id)} onChange={() => item.finding_id && toggleAdjustment(item.finding_id)} /><span>{item.label}</span></label><strong>{!item.finding_id || !excludedFindingIds.has(item.finding_id) ? `−${money(item.amount)}` : language === "zh-CN" ? "未计入" : "Excluded"}</strong></div>) : <div><span>{language === "zh-CN" ? "尚无可扣除的确认项目" : "No documented adjustments yet"}</span><strong>—</strong></div>}{inspectionOnlyFindings.length > 0 && <div className="inspection-only-note"><span>{language === "zh-CN" ? `待检查（不扣款）：${inspectionOnlyFindings.map((item) => item.title).join("；")}` : `Needs inspection (not deducted): ${inspectionOnlyFindings.map((item) => item.title).join("; ")}`}</span><strong>{language === "zh-CN" ? "待确认" : "Unconfirmed"}</strong></div>}<div><span>{language === "zh-CN" ? "证据准备金" : "Evidence reserve"}</span><strong>{record.coverage_percent}% coverage</strong></div></div></>}<button className="button primary full" onClick={generate} disabled={busy}>{busy ? "…" : t.generate}</button></section>
       <section className="card message-preview"><div className="card-heading"><div><span className="eyebrow">MESSAGE PREVIEW</span><h2>{language === "zh-CN" ? "卖家消息" : "Seller message"}</h2></div>{result && showArithmetic && <span className={`decision mini ${result.decision.toLowerCase()}`}>{result.decision}</span>}</div>{result ? <>{showArithmetic && <div className="boundary-grid"><div><span>{t.opening}</span><strong>{money(result.opening)}</strong></div><div><span>{t.target}</span><strong>{money(result.target)}</strong></div><div><span>{t.ceiling}</span><strong>{money(result.ceiling)}</strong></div></div>}<div className="message-box">{result.message}</div><button className="button ghost" onClick={copyMessage}>{t.copy}</button>{showArithmetic && <div className="trace"><strong>Calculation trace</strong>{result.trace.map((item, index) => <span key={`${item.label}-${index}`}>{item.label || item.explanation}<b>{item.amount !== undefined ? money(item.amount) : ""}</b></span>)}</div>}</> : <div className="empty-state tall">{phase === "initial_contact" ? language === "zh-CN" ? "生成一条不含报价的初次筛选消息。" : "Generate an initial screening message without a price offer." : language === "zh-CN" ? "先生成价格边界和消息。低于 40% 证据覆盖时不会给出最终最高价。" : "Generate a price boundary and message. Below 40% evidence coverage, no final ceiling is produced."}</div>}</section>
     </div>
   );
@@ -813,18 +850,46 @@ function TriStateField({ label, value, onChange }: { label: string; value: boole
   );
 }
 
+function MatchStatusField({ label, value, language, onChange }: { label: string; value: TransactionContextInput["identity_title_match"]; language: Language; onChange: (value: TransactionContextInput["identity_title_match"]) => void }) {
+  return (
+    <label>{label}
+      <select value={value} onChange={(event) => onChange(event.target.value as TransactionContextInput["identity_title_match"])}>
+        <option value="UNKNOWN">{language === "zh-CN" ? "未知 / 尚未核对" : "Unknown / not checked"}</option>
+        <option value="MATCH">{language === "zh-CN" ? "完全一致" : "Match"}</option>
+        <option value="MISMATCH">{language === "zh-CN" ? "不一致 — 停止交易" : "Mismatch — stop"}</option>
+      </select>
+    </label>
+  );
+}
+
 function TransactionView({ record, language, t, notify, setConnected, isDemo }: { record: CaseRecord; language: Language; t: typeof copy[Language]; notify: (text: string) => void; setConnected: (value: boolean) => void; isDemo: boolean }) {
-  const [context, setContext] = useState<TransactionContextInput>({ purchase_date: new Date().toISOString().slice(0, 10), buyer_residence_state: "NJ", buyer_license_state: "NJ", garaging_state: "CT", registration_state: "NJ", sale_state: "NY", title_state: "NY", seller_type: "private", title_name_matches: false, vin_matches: false, original_title_present: false, seller_allows_ppi: null, seller_allows_bill_of_sale: null, seller_discloses_odometer: null, lien_status: "unknown", insurance_active_for_vin: false, legal_transport: "none" });
+  const [context, setContext] = useState<TransactionContextInput>({ purchase_date: new Date().toISOString().slice(0, 10), buyer_residence_state: "NJ", buyer_license_state: "NJ", garaging_state: "CT", registration_state: "NJ", sale_state: "NY", title_state: "NY", seller_type: "private", title_status: "UNKNOWN", identity_title_match: "UNKNOWN", vin_match: "UNKNOWN", seller_allows_ppi: null, seller_allows_bill_of_sale: null, seller_discloses_odometer: null, lien_status: "unknown", insurance_active_for_vin: false, legal_transport: "none" });
   const [plan, setPlan] = useState<TransactionPlan>(record.transaction_plan);
   const stateFields = ["buyer_residence_state", "buyer_license_state", "garaging_state", "registration_state", "sale_state", "title_state"] as const;
+  type StateField = typeof stateFields[number];
+  type SupportedState = TransactionContextInput[StateField];
+  const [stateSelections, setStateSelections] = useState<Record<StateField, SupportedState | "">>({ buyer_residence_state: "", buyer_license_state: "", garaging_state: "", registration_state: "", sale_state: "", title_state: "" });
+  const stateLabels: Record<StateField, { en: string; zh: string }> = {
+    buyer_residence_state: { en: "Buyer residence state", zh: "买家居住州" },
+    buyer_license_state: { en: "Driver license state", zh: "驾照签发州" },
+    garaging_state: { en: "Garaging state", zh: "车辆主要停放州" },
+    registration_state: { en: "Registration state", zh: "计划注册州" },
+    sale_state: { en: "Sale state", zh: "成交州" },
+    title_state: { en: "Current title state", zh: "现有 title 州" },
+  };
 
   async function generatePlan() {
+    if (stateFields.some((field) => !stateSelections[field])) {
+      notify(language === "zh-CN" ? "请先明确选择全部六个州信息；系统不会替你猜。" : "Select all six state fields first; the system will not guess them for you.");
+      return;
+    }
+    const requestContext = { ...context, ...stateSelections } as TransactionContextInput;
     if (isDemo) {
-      setPlan(buildLocalTransactionPlan(context, language));
+      setPlan(buildLocalTransactionPlan(requestContext, language));
       notify(language === "zh-CN" ? "演示模式：使用页面内安全规则" : "Demo mode: generated with in-page safety rules");
       return;
     }
-    try { setPlan(await api.transactionPlan(record.id, context, record.vehicle, caseAccessFor(record.id))); setConnected(true); }
+    try { setPlan(await api.transactionPlan(record.id, requestContext, record.vehicle, caseAccessFor(record.id))); setConnected(true); }
     catch (error) { setConnected(!isApiConnectionFailure(error)); notify(apiErrorMessage(error, language, language === "zh-CN" ? "交易计划生成失败" : "Transaction plan failed")); }
   }
 
@@ -832,11 +897,13 @@ function TransactionView({ record, language, t, notify, setConnected, isDemo }: 
     <div className="transaction-layout">
       <section className="card transaction-form">
         <div className="card-heading"><div><span className="eyebrow">STATE-AWARE</span><h2>{t.transaction}</h2></div></div>
-        <div className="state-grid">{stateFields.map((field) => <label key={field}>{field.replaceAll("_", " ")}<select value={context[field]} onChange={(event) => setContext({ ...context, [field]: event.target.value })}><option>NJ</option><option>NY</option><option>CT</option></select></label>)}</div>
+        <div className="form-pair"><label>{language === "zh-CN" ? "计划成交日期" : "Planned purchase date"}<input type="date" value={context.purchase_date} onChange={(event) => setContext({ ...context, purchase_date: event.target.value })} /></label><label>{language === "zh-CN" ? "卖家类型" : "Seller type"}<select value={context.seller_type} onChange={(event) => setContext({ ...context, seller_type: event.target.value as TransactionContextInput["seller_type"] })}><option value="private">{language === "zh-CN" ? "私人卖家" : "Private seller"}</option><option value="dealer">{language === "zh-CN" ? "经销商" : "Dealer"}</option></select></label></div>
+        <div className="privacy-callout">{language === "zh-CN" ? "州信息决定 title、税费、临牌和登记路径。请逐项选择真实情况；这里没有预设答案。" : "These states control title, tax, permit, and registration steps. Select the real facts; no answer is preselected."}</div>
+        <div className="state-grid">{stateFields.map((field) => <label key={field}>{language === "zh-CN" ? stateLabels[field].zh : stateLabels[field].en}<select required value={stateSelections[field]} onChange={(event) => setStateSelections({ ...stateSelections, [field]: event.target.value as SupportedState | "" })}><option value="">{language === "zh-CN" ? "请选择…" : "Select…"}</option><option value="NJ">NJ</option><option value="NY">NY</option><option value="CT">CT</option></select></label>)}</div>
         <div className="gate-inputs">
-          <label><input type="checkbox" checked={context.original_title_present} onChange={(event) => setContext({ ...context, original_title_present: event.target.checked })} />Original title present</label>
-          <label><input type="checkbox" checked={context.title_name_matches} onChange={(event) => setContext({ ...context, title_name_matches: event.target.checked })} />Seller ID matches title</label>
-          <label><input type="checkbox" checked={context.vin_matches} onChange={(event) => setContext({ ...context, vin_matches: event.target.checked })} />VIN matches title, vehicle, and report</label>
+          <label>{language === "zh-CN" ? "Title 文件状态" : "Title document status"}<select value={context.title_status} onChange={(event) => setContext({ ...context, title_status: event.target.value as TransactionContextInput["title_status"] })}><option value="UNKNOWN">{language === "zh-CN" ? "未知 / 尚未看原件" : "Unknown / original not inspected"}</option><option value="ORIGINAL">{language === "zh-CN" ? "原始、可转让" : "Original and transferable"}</option><option value="MISSING">{language === "zh-CN" ? "缺失 — 停止交易" : "Missing — stop"}</option><option value="ALTERED">{language === "zh-CN" ? "涂改 — 停止交易" : "Altered — stop"}</option><option value="ALREADY_ASSIGNED">{language === "zh-CN" ? "已签给他人 — 停止交易" : "Already assigned — stop"}</option><option value="BRANDED">{language === "zh-CN" ? "Branded / 重建等" : "Branded / rebuilt, etc."}</option></select></label>
+          <MatchStatusField label={language === "zh-CN" ? "卖家身份证姓名与 title" : "Seller ID vs titled owner"} value={context.identity_title_match} language={language} onChange={(value) => setContext({ ...context, identity_title_match: value })} />
+          <MatchStatusField label={language === "zh-CN" ? "Title、车身、报告 VIN" : "VIN across title, vehicle, and report"} value={context.vin_match} language={language} onChange={(value) => setContext({ ...context, vin_match: value })} />
           <TriStateField label="Seller allows independent PPI" value={context.seller_allows_ppi} onChange={(value) => setContext({ ...context, seller_allows_ppi: value })} />
           <TriStateField label="Seller will sign bill of sale" value={context.seller_allows_bill_of_sale} onChange={(value) => setContext({ ...context, seller_allows_bill_of_sale: value })} />
           <TriStateField label="Seller discloses odometer" value={context.seller_discloses_odometer} onChange={(value) => setContext({ ...context, seller_discloses_odometer: value })} />
@@ -965,15 +1032,61 @@ function CompareView({ cases, language, t, isDemo, notify: _notify }: { cases: C
 function ImportModal({ record, language, onClose, patchCase, notify, setConnected, isDemo, onRefresh }: { record: CaseRecord; language: Language; onClose: () => void; patchCase: (updater: (item: CaseRecord) => CaseRecord) => void; notify: (text: string) => void; setConnected: (value: boolean) => void; isDemo: boolean; onRefresh: () => void }) {
   const [form, setForm] = useState<ListingImportForm>(() => targetListingImportForm(record));
   const [busy, setBusy] = useState(false);
+  const [decodeBusy, setDecodeBusy] = useState(false);
+  const [decodeError, setDecodeError] = useState<string>();
+  const [decodeStatus, setDecodeStatus] = useState<string>();
   const zh = language === "zh-CN";
   function switchRole(role: ListingRole) {
     setForm(role === "target" ? targetListingImportForm(record) : comparableListingImportForm(record));
+    setDecodeError(undefined);
+    setDecodeStatus(undefined);
   }
   function update<K extends keyof ListingImportForm>(key: K, value: ListingImportForm[K]) {
     setForm((current) => ({ ...current, [key]: value }));
   }
+  function updateVin(value: string) {
+    update("vin", normalizeVinInput(value));
+    setDecodeError(undefined);
+    setDecodeStatus(undefined);
+  }
+  async function decodeListingVin() {
+    const vin = normalizeVinInput(form.vin);
+    setDecodeError(undefined);
+    setDecodeStatus(undefined);
+    if (!isValidModernVin(vin)) {
+      setDecodeError(zh ? "请输入 17 位 VIN（不能含 I、O、Q），或留空后手工填写配置。" : "Enter a 17-character VIN without I, O, or Q, or leave it blank and enter the configuration manually.");
+      return;
+    }
+    setDecodeBusy(true);
+    try {
+      const decoded = await api.decodeVin(vin, form.year ? Number(form.year) : undefined);
+      if (!decoded.decodeValid) {
+        setDecodeError(zh
+          ? `NHTSA 无法确认这个 VIN${decoded.errorText ? `：${decoded.errorText}` : ""}。请核对字符，并手工填写可验证的配置。`
+          : `NHTSA could not validate this VIN${decoded.errorText ? `: ${decoded.errorText}` : ""}. Check every character and enter only verifiable configuration manually.`);
+        return;
+      }
+      setForm((current) => ({
+        ...applyDecodedVehicleToForm(current, decoded.vehicle),
+        generation: decoded.vehicle.generation || current.generation,
+        platform: decoded.vehicle.platform || current.platform,
+        production_date: decoded.vehicle.production_date || current.production_date,
+      }));
+      setConnected(true);
+      setDecodeStatus(zh ? "NHTSA 解码完成；请与车身铭牌和 title 逐项核对。" : "NHTSA decode complete. Verify every field against the VIN label and title.");
+    } catch (error) {
+      setConnected(!isApiConnectionFailure(error));
+      setDecodeError(apiErrorMessage(error, language, zh ? "VIN 解码失败；仍可手工填写。" : "VIN decode failed; manual entry remains available."));
+    } finally {
+      setDecodeBusy(false);
+    }
+  }
   async function submit(event: FormEvent) {
     event.preventDefault();
+    if (form.vin && !isValidModernVin(form.vin)) {
+      setDecodeError(zh ? "VIN 必须为 17 位且不能含 I、O、Q；请修正或清空。" : "VIN must be 17 characters without I, O, or Q. Correct it or clear the field.");
+      return;
+    }
     const listing = listingImportPayload(form);
     setBusy(true);
     try {
@@ -1077,6 +1190,13 @@ function ImportModal({ record, language, onClose, patchCase, notify, setConnecte
             {form.role === "comparable" && <button className="text-button config-copy-button" type="button" onClick={() => setForm((current) => copyResolvedTargetConfiguration(current, record.vehicle))}>{zh ? "复制目标配置（需逐项核实）" : "Copy target config (verify each field)"}</button>}
           </div>
           {form.copied_configuration && <div className="copied-config-warning" role="status">{zh ? "已复制案件中的目标配置。这只是便捷输入；提交前必须与可比车源逐项核实。" : "Copied from the case target for convenience. Verify every field against the comparable before submitting."}</div>}
+          <div className="vin-decode-row">
+            <label>VIN<input value={form.vin} maxLength={17} onChange={(event) => updateVin(event.target.value)} placeholder="17 characters" /></label>
+            <button className="button ghost" type="button" onClick={decodeListingVin} disabled={decodeBusy || busy}>{decodeBusy ? "…" : zh ? "免费 NHTSA 解码" : "Free NHTSA decode"}</button>
+          </div>
+          {decodeError && <div className="form-error" role="alert">{decodeError}</div>}
+          {decodeStatus && <div className="form-success" role="status">{decodeStatus}</div>}
+          <div className="privacy-callout">{zh ? "仅在你点击解码时，VIN 会由本地 API 发送给免费的美国 NHTSA vPIC 服务；不需要账号或 API key。解码结果是待核对的规格，不证明 title 或车况。" : "Only when you click decode, the local API sends the VIN to the free U.S. NHTSA vPIC service. No account or API key is needed. Decoded specs require review and do not prove title or condition."}</div>
           <div className="form-triple">
             <label>{zh ? "年款" : "Year"}<input type="number" min="1981" max="2100" value={form.year} onChange={(event) => update("year", event.target.value)} /></label>
             <label>{zh ? "品牌" : "Make"}<input value={form.make} onChange={(event) => update("make", event.target.value)} /></label>
@@ -1100,18 +1220,19 @@ function ImportModal({ record, language, onClose, patchCase, notify, setConnecte
         </section>
 
         <div className="privacy-callout">{zh ? "不会导入 Cookie、登录令牌或私聊正文。提交的字段会作为用户提供的结构化车源证据保存。" : "No cookies, session tokens, or private-message text are imported. Submitted fields are stored as user-provided structured listing evidence."}</div>
-        <button className="button primary full" disabled={busy}>{busy ? "…" : form.role === "target" ? zh ? "导入目标车" : "Import target" : zh ? "导入可比车" : "Import comparable"}</button>
+        <button className="button primary full" disabled={busy || decodeBusy}>{busy ? "…" : form.role === "target" ? zh ? "导入目标车" : "Import target" : zh ? "导入可比车" : "Import comparable"}</button>
       </form>
     </div>
   );
 }
 
-function CaseArchiveModal({ activeCase, dataMode, language, onClose, onImported }: {
+function CaseArchiveModal({ activeCase, dataMode, language, onClose, onImported, onDeleted }: {
   activeCase?: CaseRecord;
   dataMode: "api" | "demo" | "offline";
   language: Language;
   onClose: () => void;
   onImported: (record: CaseRecord) => void;
+  onDeleted: (caseId: string) => void;
 }) {
   const [exportPassphrase, setExportPassphrase] = useState("");
   const [importPassphrase, setImportPassphrase] = useState("");
@@ -1121,7 +1242,10 @@ function CaseArchiveModal({ activeCase, dataMode, language, onClose, onImported 
   const [exportError, setExportError] = useState<string>();
   const [importError, setImportError] = useState<string>();
   const [exportStatus, setExportStatus] = useState<string>();
-  const isBusy = exportBusy || importBusy;
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState<string>();
+  const isBusy = exportBusy || importBusy || deleteBusy;
   const canExport = Boolean(activeCase && dataMode === "api");
 
   async function exportArchive(event: FormEvent) {
@@ -1193,6 +1317,27 @@ function CaseArchiveModal({ activeCase, dataMode, language, onClose, onImported 
     }
   }
 
+  async function deleteCurrentCase(event: FormEvent) {
+    event.preventDefault();
+    setDeleteError(undefined);
+    if (!activeCase || dataMode !== "api") {
+      setDeleteError(language === "zh-CN" ? "只能删除已连接 API 的真实案件。" : "Only a real API-connected case can be deleted here.");
+      return;
+    }
+    if (deleteConfirmation !== "DELETE") {
+      setDeleteError(language === "zh-CN" ? "请输入 DELETE 以确认永久删除。" : "Type DELETE to confirm permanent deletion.");
+      return;
+    }
+    setDeleteBusy(true);
+    try {
+      await api.deleteCase(activeCase.id, caseAccessFor(activeCase.id));
+      onDeleted(activeCase.id);
+    } catch (reason) {
+      setDeleteError(apiErrorMessage(reason, language, language === "zh-CN" ? "案件删除失败。" : "Case deletion failed."));
+      setDeleteBusy(false);
+    }
+  }
+
   return (
     <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && !isBusy && onClose()}>
       <section className="modal archive-modal" role="dialog" aria-modal="true" aria-labelledby="archive-modal-title" aria-busy={isBusy}>
@@ -1219,29 +1364,82 @@ function CaseArchiveModal({ activeCase, dataMode, language, onClose, onImported 
             <button className="button primary full" disabled={importBusy || exportBusy}>{importBusy ? "…" : language === "zh-CN" ? "解密并导入" : "Decrypt and import"}</button>
           </form>
         </div>
+        <form className="case-delete-zone" onSubmit={deleteCurrentCase}>
+          <div><span className="eyebrow">DELETE ONE CASE</span><h3>{language === "zh-CN" ? "永久删除当前案件" : "Permanently delete this case"}</h3><p>{language === "zh-CN" ? "删除结构化案件、附件和当前会话 capability；不会影响其他案件。此操作不可撤销。" : "Deletes this structured case, its artifacts, and its session capability without touching other cases. This cannot be undone."}</p></div>
+          <label>{language === "zh-CN" ? "输入 DELETE 确认" : "Type DELETE to confirm"}<input value={deleteConfirmation} onChange={(event) => setDeleteConfirmation(event.target.value)} disabled={!canExport || isBusy} autoComplete="off" /></label>
+          {deleteError && <div className="form-error" role="alert">{deleteError}</div>}
+          <button className="button danger" disabled={!canExport || isBusy || deleteConfirmation !== "DELETE"}>{deleteBusy ? "…" : language === "zh-CN" ? "删除这个案件" : "Delete this case"}</button>
+        </form>
       </section>
     </div>
   );
 }
 
 function NewCaseModal({ language, onClose, onCreate, setConnected, isDemo }: { language: Language; onClose: () => void; onCreate: (record: CaseRecord) => void; setConnected: (value: boolean) => void; isDemo: boolean }) {
-  const [form, setForm] = useState({ year: "", make: "", model: "", trim: "", budget: "" });
+  const [form, setForm] = useState({ vin: "", year: "", make: "", model: "", trim: "", engine: "", transmission: "", drivetrain: "", fuel_type: "", body_style: "", budget: "" });
+  const [decodedVehicle, setDecodedVehicle] = useState<VehicleSpec>();
+  const [decodeBusy, setDecodeBusy] = useState(false);
+  const [decodeError, setDecodeError] = useState<string>();
+  const [decodeStatus, setDecodeStatus] = useState<string>();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
+
+  function updateVin(value: string) {
+    const vin = normalizeVinInput(value);
+    setForm((current) => ({ ...current, vin }));
+    if (normalizeVinInput(decodedVehicle?.vin || "") !== vin) setDecodedVehicle(undefined);
+    setDecodeError(undefined);
+    setDecodeStatus(undefined);
+  }
+
+  async function decodeVin() {
+    const vin = normalizeVinInput(form.vin);
+    setDecodeError(undefined);
+    setDecodeStatus(undefined);
+    if (!isValidModernVin(vin)) {
+      setDecodeError(language === "zh-CN" ? "请输入 17 位 VIN；VIN 不能包含 I、O 或 Q。你也可以跳过解码，直接手工填写车辆信息。" : "Enter a 17-character VIN without I, O, or Q. You can also skip decoding and enter the vehicle manually.");
+      return;
+    }
+
+    setDecodeBusy(true);
+    try {
+      const year = Number(form.year);
+      const response = await api.decodeVin(vin, Number.isInteger(year) && year >= 1981 && year <= 2100 ? year : undefined);
+      if (!response.decodeValid) {
+        setDecodedVehicle(undefined);
+        setDecodeError(language === "zh-CN" ? `NHTSA 未能确认这个 VIN${response.errorText ? `：${response.errorText}` : ""}。请核对 VIN，或继续手工填写。` : `NHTSA could not validate this VIN${response.errorText ? `: ${response.errorText}` : ""}. Check the VIN or continue with manual entry.`);
+        return;
+      }
+      const vehicle = { ...response.vehicle, vin: response.vehicle.vin || vin };
+      setDecodedVehicle(vehicle);
+      setForm((current) => applyDecodedVehicleToForm(current, vehicle));
+      setDecodeStatus(language === "zh-CN" ? "已用 NHTSA 官方数据填入可识别字段；空白或不准确的字段仍可手工修改。" : "Recognized fields were filled from official NHTSA data. Blank or inaccurate fields can still be edited manually.");
+    } catch (reason) {
+      setDecodeError(apiErrorMessage(reason, language, language === "zh-CN" ? "无法通过本地 API 联系 NHTSA。请检查网络和服务，或继续手工填写。" : "The local API could not reach NHTSA. Check the service and internet connection, or continue with manual entry."));
+    } finally {
+      setDecodeBusy(false);
+    }
+  }
+
   async function submit(event: FormEvent) {
     event.preventDefault();
+    if (form.vin && !isValidModernVin(form.vin)) {
+      setError(language === "zh-CN" ? "VIN 必须留空，或填写不含 I、O、Q 的完整 17 位 VIN。" : "Leave VIN blank or enter a complete 17-character VIN without I, O, or Q.");
+      return;
+    }
     setBusy(true);
     setError(undefined);
     try {
+      const vehicle = vehicleSpecForCase(form, decodedVehicle);
       if (isDemo) {
         const seed = structuredClone(demoCases[1]);
         seed.id = `demo-${Date.now()}`;
         seed.name = `${form.year} ${form.make} ${form.model}`.trim() || "Untitled vehicle";
-        seed.vehicle = { year: form.year ? Number(form.year) : undefined, make: form.make, model: form.model, trim: form.trim };
+        seed.vehicle = vehicle;
         seed.listing = { ...seed.listing, id: `listing-${seed.id}`, title: seed.name, asking_price: 0, mileage: undefined, captured_at: new Date().toISOString() };
         onCreate(seed);
       } else {
-        const created = await api.createCase({ language, all_in_budget: form.budget ? Number(form.budget) : undefined, vehicle: { year: form.year ? Number(form.year) : undefined, make: form.make, model: form.model, trim: form.trim } });
+        const created = await api.createCase({ language, all_in_budget: form.budget ? Number(form.budget) : undefined, vehicle });
         rememberCaseAccess(created.case.id, created.accessToken);
         setConnected(true);
         onCreate(created.case);
@@ -1253,5 +1451,30 @@ function NewCaseModal({ language, onClose, onCreate, setConnected, isDemo }: { l
       setBusy(false);
     }
   }
-  return <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}><form className="modal small" onSubmit={submit}><div className="modal-head"><div><span className="eyebrow">NEW CASE</span><h2>{language === "zh-CN" ? "建立候选车辆" : "Create vehicle case"}</h2></div><button type="button" onClick={onClose}>×</button></div><div className="form-pair"><label>Year<input type="number" value={form.year} onChange={(event) => setForm({ ...form, year: event.target.value })} /></label><label>Make<input required value={form.make} onChange={(event) => setForm({ ...form, make: event.target.value })} /></label></div><div className="form-pair"><label>Model<input required value={form.model} onChange={(event) => setForm({ ...form, model: event.target.value })} /></label><label>Trim<input value={form.trim} onChange={(event) => setForm({ ...form, trim: event.target.value })} /></label></div><label>All-in budget<input type="number" value={form.budget} onChange={(event) => setForm({ ...form, budget: event.target.value })} /></label>{error && <div className="form-error" role="alert">{error}</div>}<button className="button primary full" disabled={busy}>{busy ? "…" : language === "zh-CN" ? "创建案件" : "Create case"}</button></form></div>;
+  const isBusy = busy || decodeBusy;
+  return (
+    <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && !isBusy && onClose()}>
+      <form className="modal small" onSubmit={submit} aria-busy={isBusy}>
+        <div className="modal-head">
+          <div><span className="eyebrow">NEW CASE</span><h2>{language === "zh-CN" ? "建立候选车辆" : "Create vehicle case"}</h2></div>
+          <button type="button" onClick={onClose} disabled={isBusy} aria-label={language === "zh-CN" ? "关闭" : "Close"}>×</button>
+        </div>
+        <div className="vin-decode-row">
+          <label>VIN<input value={form.vin} maxLength={32} autoCapitalize="characters" autoComplete="off" spellCheck={false} disabled={isBusy} aria-describedby="vin-decode-disclosure" onChange={(event) => updateVin(event.target.value)} placeholder="17-character VIN" /></label>
+          <button className="button ghost" type="button" onClick={() => void decodeVin()} disabled={isBusy || !form.vin} aria-describedby="vin-decode-disclosure">{decodeBusy ? (language === "zh-CN" ? "解码中…" : "Decoding…") : language === "zh-CN" ? "免费 NHTSA 解码" : "Free NHTSA decode"}</button>
+        </div>
+        <div className="privacy-callout" id="vin-decode-disclosure">{language === "zh-CN" ? "只有点击解码后，VIN 才会经本地 API 发送到美国 NHTSA 官方 vPIC。需要联网；无需账户、API key 或费用。请逐项复核下方自动填入字段；创建后它们作为你审核过的车辆资料保存，不会冒充独立证据。交易前仍须逐字比对车身和原始 title 上的 VIN。" : "Only after you click decode is the VIN sent through the local API to official NHTSA vPIC. Internet is required; no account, API key, or fee is required. Review every filled field below: after creation it is saved as your reviewed vehicle specification, not as independent evidence. Compare the physical vehicle VIN and original title character by character before purchase."}</div>
+        {decodeError && <div className="form-error" role="alert">{decodeError}</div>}
+        {decodeStatus && <div className="form-success" role="status">{decodeStatus}</div>}
+        <div className="form-pair"><label>Year<input type="number" value={form.year} disabled={isBusy} onChange={(event) => setForm({ ...form, year: event.target.value })} /></label><label>Make<input required value={form.make} disabled={isBusy} onChange={(event) => setForm({ ...form, make: event.target.value })} /></label></div>
+        <div className="form-pair"><label>Model<input required value={form.model} disabled={isBusy} onChange={(event) => setForm({ ...form, model: event.target.value })} /></label><label>Trim<input value={form.trim} disabled={isBusy} onChange={(event) => setForm({ ...form, trim: event.target.value })} /></label></div>
+        <div className="form-pair"><label>{language === "zh-CN" ? "发动机（请复核）" : "Engine (review)"}<input value={form.engine} disabled={isBusy} onChange={(event) => setForm({ ...form, engine: event.target.value })} /></label><label>{language === "zh-CN" ? "变速箱（请复核）" : "Transmission (review)"}<input value={form.transmission} disabled={isBusy} onChange={(event) => setForm({ ...form, transmission: event.target.value })} /></label></div>
+        <div className="form-pair"><label>{language === "zh-CN" ? "驱动形式（请复核）" : "Drivetrain (review)"}<input value={form.drivetrain} disabled={isBusy} onChange={(event) => setForm({ ...form, drivetrain: event.target.value })} /></label><label>{language === "zh-CN" ? "燃料类型（请复核）" : "Fuel type (review)"}<input value={form.fuel_type} disabled={isBusy} onChange={(event) => setForm({ ...form, fuel_type: event.target.value })} /></label></div>
+        <label>{language === "zh-CN" ? "车身形式（请复核）" : "Body style (review)"}<input value={form.body_style} disabled={isBusy} onChange={(event) => setForm({ ...form, body_style: event.target.value })} /></label>
+        <label>All-in budget<input type="number" value={form.budget} disabled={isBusy} onChange={(event) => setForm({ ...form, budget: event.target.value })} /></label>
+        {error && <div className="form-error" role="alert">{error}</div>}
+        <button className="button primary full" disabled={isBusy}>{busy ? "…" : language === "zh-CN" ? "创建案件" : "Create case"}</button>
+      </form>
+    </div>
+  );
 }

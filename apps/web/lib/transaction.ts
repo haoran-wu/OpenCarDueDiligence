@@ -7,23 +7,48 @@ export function buildLocalTransactionPlan(context: TransactionContextInput, lang
     gates.push({ id, title, detail, status });
   };
 
-  if (!context.original_title_present) add(
+  if (["MISSING", "ALTERED", "ALREADY_ASSIGNED"].includes(context.title_status)) add(
+    "title",
+    zh ? "Title 文件不可安全转让" : "Title document is not safely transferable",
+    zh ? "缺失、涂改或已签给他人的 title 都必须先由签发州纠正；现在不要付款。" : "A missing, altered, or already-assigned title must be corrected by the issuing state before payment.",
+    "blocked",
+  );
+  else if (context.title_status === "BRANDED") add(
+    "title",
+    zh ? "Branded title 需要专项复核" : "Branded title needs specialist review",
+    zh ? "先核对品牌类型、维修证据、保险资格和州验车要求。" : "Verify the brand, repair evidence, insurance eligibility, and state inspection rules.",
+    "verify",
+  );
+  else if (context.title_status === "UNKNOWN") add(
     "title",
     zh ? "原始 title 尚未核对" : "Original title not verified",
     zh ? "付款前必须查看可转让的原始产权证。" : "Inspect a transferable original title before payment.",
     "verify",
   );
-  if (!context.title_name_matches) add(
+
+  const matchGate = (
+    value: "UNKNOWN" | "MATCH" | "MISMATCH",
+    id: string,
+    unknownTitle: string,
+    mismatchTitle: string,
+    detail: string,
+  ) => {
+    if (value === "UNKNOWN") add(id, unknownTitle, detail, "verify");
+    else if (value === "MISMATCH") add(id, mismatchTitle, detail, "blocked");
+  };
+  matchGate(
+    context.identity_title_match,
     "name",
     zh ? "姓名尚未核对" : "Owner identity not verified",
-    zh ? "卖家身份证姓名必须与 title 车主一致。" : "Seller ID must match the owner named on the title.",
-    "verify",
+    zh ? "卖家身份与 title 不一致" : "Seller identity does not match title",
+    zh ? "卖家身份证姓名必须与 title 车主一致，或有可核实的签署授权。" : "Seller ID must match the titled owner or have verifiable signing authority.",
   );
-  if (!context.vin_matches) add(
+  matchGate(
+    context.vin_match,
     "vin",
     zh ? "VIN 尚未一致核对" : "VIN not verified",
+    zh ? "VIN 不一致" : "VIN mismatch",
     zh ? "title、车身和历史报告上的 VIN 必须完全一致。" : "VIN on the title, vehicle, and history report must match exactly.",
-    "verify",
   );
 
   const sellerGate = (

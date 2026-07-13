@@ -125,6 +125,37 @@ def test_listing_import_is_idempotent(
     )
 
 
+def test_abs_only_scan_does_not_claim_no_powertrain_codes(
+    client: TestClient, resolved_vehicle: dict[str, object]
+) -> None:
+    case_id = _create_case(client, resolved_vehicle)
+    scan = client.post(
+        f"/v1/cases/{case_id}/obd/scans",
+        json={
+            "scannerName": "ABS-only test scanner",
+            "moduleCoverage": {
+                "powertrain": "NOT_SCANNED",
+                "abs": "SCANNED",
+                "srs": "NOT_SCANNED",
+                "body": "NOT_SCANNED",
+            },
+            "dtcs": [],
+            "limitations": ["Powertrain was not scanned"],
+        },
+    )
+    assert scan.status_code == 201, scan.text
+
+    case = client.get(f"/v1/cases/{case_id}")
+    assert case.status_code == 200, case.text
+    excerpt = next(
+        item["excerpt"]
+        for item in case.json()["evidence"]
+        if item["kind"] == "obd_scan"
+    )
+    assert excerpt == "No generic powertrain DTC scan data"
+    assert "DTC reported" not in excerpt
+
+
 def test_target_refresh_updates_details_but_preserves_conflicting_canonical_vin(
     client: TestClient, resolved_vehicle: dict[str, object]
 ) -> None:

@@ -4,7 +4,7 @@ message: >-
   the exact commit you evaluated.
 title: OpenCarDueDiligence
 type: software
-version: 0.1.0-alpha
+version: 0.1.0-alpha.2
 authors:
   - name: OpenCarDueDiligence contributors
 abstract: >-

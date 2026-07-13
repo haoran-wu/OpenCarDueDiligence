@@ -3,7 +3,7 @@ name: opencarduediligence-cloud
 # This is a loopback-only, single-host reference deployment, not a public or
 # production Compose configuration. Replace every dev credential, terminate
 # TLS at an external reverse proxy, add distributed rate limiting/monitoring,
-# and use managed Postgres/Redis/S3/KMS before any public deployment.
+# and use managed Postgres/Valkey/S3/KMS before any public deployment.
 services:
   postgres:
     image: postgres:16-alpine
@@ -20,14 +20,14 @@ services:
       timeout: 5s
       retries: 30
 
-  redis:
-    image: redis:7.4-alpine
-    command: ["redis-server", "--appendonly", "yes"]
+  valkey:
+    image: valkey/valkey:8.1.8-alpine
+    command: ["valkey-server", "--appendonly", "yes"]
     restart: unless-stopped
     volumes:
       - redis-data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "valkey-cli", "ping"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -83,7 +83,7 @@ services:
       OCDD_ENV: cloud
       OCDD_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-ocdd}:${POSTGRES_PASSWORD:-ocdd-dev-only}@postgres:5432/${POSTGRES_DB:-ocdd}
       OCDD_DATA_ROOT: /app/data
-      OCDD_REDIS_URL: redis://redis:6379/0
+      OCDD_REDIS_URL: redis://valkey:6379/0
       OCDD_DOCUMENT_PROCESSOR: celery
       OCDD_DOCUMENT_PROCESSOR_TIMEOUT_SECONDS: ${OCDD_DOCUMENT_PROCESSOR_TIMEOUT_SECONDS:-45}
       # Intentionally no cloud default. API startup fails closed until the
@@ -96,6 +96,7 @@ services:
       OCDD_ARTIFACT_REQUEST_MAX_BYTES: ${OCDD_ARTIFACT_REQUEST_MAX_BYTES:-14046552}
       OCDD_CLOUD_CASE_CREATE_PER_MINUTE: ${OCDD_CLOUD_CASE_CREATE_PER_MINUTE:-30}
       OCDD_CLOUD_ARTIFACT_UPLOAD_PER_MINUTE: ${OCDD_CLOUD_ARTIFACT_UPLOAD_PER_MINUTE:-20}
+      OCDD_CLOUD_VIN_DECODE_PER_MINUTE: ${OCDD_CLOUD_VIN_DECODE_PER_MINUTE:-30}
       OCDD_CASE_LEASE_TTL_SECONDS: ${OCDD_CASE_LEASE_TTL_SECONDS:-300}
       OCDD_CASE_LEASE_WAIT_SECONDS: ${OCDD_CASE_LEASE_WAIT_SECONDS:-5}
       OCDD_S3_ENDPOINT_URL: http://minio:9000
@@ -115,7 +116,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
+      valkey:
         condition: service_healthy
       minio-init:
         condition: service_completed_successfully
@@ -138,7 +139,7 @@ services:
     restart: unless-stopped
     init: true
     environment:
-      # This process has no dependency on FastAPI, PostgreSQL, or Redis. It
+      # This process has no dependency on FastAPI, PostgreSQL, or Valkey. It
       # scans only the dedicated transient prefix and exits on purge failure so
       # the container restart policy can retry.
       OCDD_ARTIFACT_PURGE_INTERVAL_SECONDS: ${OCDD_ARTIFACT_PURGE_INTERVAL_SECONDS:-60}
@@ -170,13 +171,13 @@ services:
     restart: unless-stopped
     init: true
     environment:
-      OCDD_REDIS_URL: redis://redis:6379/0
+      OCDD_REDIS_URL: redis://valkey:6379/0
       OCDD_WORKER_ENVELOPE_KEY: ${OCDD_WORKER_ENVELOPE_KEY:-}
       OCDD_WORKER_TMP_DIR: /tmp/ocdd-worker
       OCDD_STORAGE_PATH: /tmp/ocdd-worker
       OCDD_ARTIFACT_TTL_SECONDS: ${OCDD_ARTIFACT_TTL_SECONDS:-3600}
     depends_on:
-      redis:
+      valkey:
         condition: service_healthy
 
   web:

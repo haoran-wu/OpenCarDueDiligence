@@ -6,14 +6,14 @@ x-ocdd-notes:
   obd-bridge: "Host-only by design: read-only BLE access at http://127.0.0.1:8765"
 
 services:
-  redis:
-    image: redis:7.4-alpine
-    command: ["redis-server", "--appendonly", "yes"]
+  valkey:
+    image: valkey/valkey:8.1.8-alpine
+    command: ["valkey-server", "--appendonly", "yes"]
     restart: unless-stopped
     volumes:
       - redis-data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "valkey-cli", "ping"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -30,21 +30,21 @@ services:
       OCDD_DATABASE_PATH: /data/ocdd.sqlite3
       OCDD_DATA_ROOT: /app/data
       OCDD_ARTIFACT_TTL_SECONDS: ${OCDD_ARTIFACT_TTL_SECONDS:-3600}
-      OCDD_REDIS_URL: redis://redis:6379/0
+      OCDD_REDIS_URL: redis://valkey:6379/0
       OCDD_DOCUMENT_PROCESSOR: celery
       OCDD_DOCUMENT_PROCESSOR_TIMEOUT_SECONDS: ${OCDD_DOCUMENT_PROCESSOR_TIMEOUT_SECONDS:-45}
       OCDD_CASE_LEASE_TTL_SECONDS: ${OCDD_CASE_LEASE_TTL_SECONDS:-300}
       OCDD_CASE_LEASE_WAIT_SECONDS: ${OCDD_CASE_LEASE_WAIT_SECONDS:-5}
-      # Development-only default. Supply a new random 32-byte base64 key for
-      # any shared or remotely reachable deployment.
-      OCDD_WORKER_ENVELOPE_KEY: ${OCDD_WORKER_ENVELOPE_KEY:-MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=}
+      # The one-command quickstart generates this private key. Direct Compose
+      # startup fails closed when it is absent instead of using a public key.
+      OCDD_WORKER_ENVELOPE_KEY: ${OCDD_WORKER_ENVELOPE_KEY:-}
       OCDD_CORS_ORIGINS: ${OCDD_CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
     volumes:
       - ocdd-local-data:/data
     ports:
       - "127.0.0.1:${OCDD_API_PORT:-8000}:8000"
     depends_on:
-      redis:
+      valkey:
         condition: service_healthy
     healthcheck:
       test:
@@ -71,15 +71,15 @@ services:
       - --beat
       - --loglevel=INFO
     environment:
-      OCDD_REDIS_URL: redis://redis:6379/0
-      OCDD_WORKER_ENVELOPE_KEY: ${OCDD_WORKER_ENVELOPE_KEY:-MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=}
+      OCDD_REDIS_URL: redis://valkey:6379/0
+      OCDD_WORKER_ENVELOPE_KEY: ${OCDD_WORKER_ENVELOPE_KEY:-}
       OCDD_WORKER_TMP_DIR: /tmp/ocdd-worker
       OCDD_STORAGE_PATH: /data/artifacts
       OCDD_ARTIFACT_TTL_SECONDS: ${OCDD_ARTIFACT_TTL_SECONDS:-3600}
     volumes:
       - ocdd-local-data:/data
     depends_on:
-      redis:
+      valkey:
         condition: service_healthy
 
   web:

@@ -31,4 +31,10 @@ describe("listing import UI contract", () => {
     expect(mobileCss).toContain(".form-pair, .form-triple, .state-grid, .listing-role { grid-template-columns: 1fr; }");
     expect(mobileCss).toContain(".modal.listing-import-modal { max-height: calc(100vh - 16px);");
   });
+
+  it("fails closed when NHTSA cannot validate a syntactically valid listing VIN", () => {
+    expect(dashboard).toContain("if (!decoded.decodeValid)");
+    expect(dashboard).toContain("NHTSA could not validate this VIN");
+    expect(dashboard).toContain("NHTSA decode complete. Verify every field");
+  });
 });

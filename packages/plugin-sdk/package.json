@@ -1,6 +1,6 @@
 {
   "name": "@ocdd/plugin-sdk",
-  "version": "0.1.0",
+  "version": "0.1.0-alpha.2",
   "private": true,
   "license": "Apache-2.0",
   "repository": {
@@ -22,7 +22,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@ocdd/contracts": "0.1.0"
+    "@ocdd/contracts": "0.1.0-alpha.2"
   },
   "devDependencies": {
     "typescript": "^5.6.3"

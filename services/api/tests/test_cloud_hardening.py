@@ -181,6 +181,23 @@ def test_cloud_artifact_upload_limit_fails_closed_before_second_persistence(
     assert app.state.repository.artifact_count(case_id) == 1
 
 
+def test_cloud_vin_decode_has_a_dedicated_peer_rate_limit(tmp_path: Path) -> None:
+    app = create_app(
+        database_path=tmp_path / "vin-decode-limit.sqlite3",
+        deployment_mode="cloud",
+        cloud_case_create_limit_per_minute=10,
+        cloud_artifact_upload_limit_per_minute=10,
+        cloud_vin_decode_limit_per_minute=1,
+    )
+    with TestClient(app) as client:
+        first = client.post("/v1/vehicles/decode-vin", json={"vin": "invalid"})
+        second = client.post("/v1/vehicles/decode-vin", json={"vin": "invalid"})
+
+    assert first.status_code == 422
+    assert second.status_code == 429
+    assert int(second.headers["Retry-After"]) >= 1
+
+
 def test_cloud_title_and_seller_chat_never_store_raw_body_name_or_label(
     tmp_path: Path,
     caplog: pytest.LogCaptureFixture,
@@ -446,4 +463,11 @@ def test_cloud_limit_configuration_cannot_be_disabled(tmp_path: Path) -> None:
             database_path=tmp_path / "invalid.sqlite3",
             deployment_mode="cloud",
             cloud_case_create_limit_per_minute=0,
+        )
+
+    with pytest.raises(ValueError, match="rate limits must be positive"):
+        create_app(
+            database_path=tmp_path / "invalid-vin-limit.sqlite3",
+            deployment_mode="cloud",
+            cloud_vin_decode_limit_per_minute=0,
         )

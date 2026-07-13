@@ -2,9 +2,9 @@
 
 Copyright (C) 2026 OpenCarDueDiligence contributors.
 
-The application and service code is available under AGPL-3.0-or-later, whose
-complete text is in `LICENSE`, or under a separately signed commercial license
-described in `COMMERCIAL-LICENSE.md`.
+The application and service code is available only under
+AGPL-3.0-or-later, whose complete text is in `LICENSE`. The official project
+does not offer a paid edition or a proprietary alternative license.
 
 `packages/plugin-sdk` is separately licensed under Apache-2.0. First-party
 rule and knowledge data under `data/` is CC BY-SA 4.0 unless a file-specific

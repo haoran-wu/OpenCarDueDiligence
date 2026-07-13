@@ -80,7 +80,7 @@ authenticate their sender. The reference API container starts Uvicorn with
 `--no-proxy-headers`; an operator may opt in only with an explicit trusted
 `--forwarded-allow-ips` boundary. This is only single-process/single-instance defense:
 a public multi-worker or multi-replica deployment **must** add a distributed
-Redis-backed API-gateway/WAF limit at its trusted ingress.
+Valkey-backed API-gateway/WAF limit at its trusted ingress.
 
 `docker-compose.cloud.yml` is a loopback-only single-host reference: every
 published port binds to `127.0.0.1`. A public production deployment still
@@ -107,14 +107,14 @@ startup fails if Celery mode has no valid key, and an unavailable worker returns
 HTTP 503 without accepting or persisting the upload.
 
 Optional language rendering remains disabled unless a caller explicitly builds
-an adapter with `create_optional_non_openai_llm_provider`. Anthropic uses
-`OCDD_LLM_PROVIDER=anthropic`, `ANTHROPIC_API_KEY`, and
-`OCDD_ANTHROPIC_MODEL`; local Ollama uses `OCDD_LLM_PROVIDER=ollama` and
-`OCDD_OLLAMA_MODEL`, with optional `OCDD_OLLAMA_BASE_URL` and
-`OLLAMA_API_KEY`. Missing configuration fails closed, while the complete
-deterministic analysis continues without a provider. These adapters receive
-structured facts only, cannot mutate a case, and reject generated prose that
-introduces a new numeric value or protected decision label.
+the local adapter with `create_optional_local_llm_provider`. Ollama uses
+`OCDD_LLM_PROVIDER=ollama` and `OCDD_OLLAMA_MODEL`, with optional
+`OCDD_OLLAMA_BASE_URL` and `OLLAMA_API_KEY`. The official distribution has no
+hosted or paid LLM adapter and never requires an API key. Missing configuration
+fails closed, while the complete deterministic analysis continues without a
+provider. The adapter receives structured facts only, cannot mutate a case,
+and rejects generated prose that introduces a new numeric value or protected
+decision label.
 
 Interactive API documentation is available at `/docs`.
 

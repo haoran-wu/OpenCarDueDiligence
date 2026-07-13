@@ -23,6 +23,10 @@ jobs:
           python -m pip install -e 'services/api[dev,cloud]' -e 'services/worker[dev]' -e 'services/obd-bridge[dev]'
       - name: Lint Python sources
         run: python -m ruff check services scripts
+      - name: Test the standard-library quickstart
+        run: python -m unittest discover -s scripts/tests -p 'test_*.py' -v
+      - name: Enforce the free-distribution policy
+        run: python scripts/check_free_distribution.py
       - name: Run Python tests
         env:
           PYTHONPATH: services/api
@@ -77,16 +81,13 @@ jobs:
         run: |
           docker compose config --quiet
           docker compose -f docker-compose.cloud.yml config --quiet
-      - name: Build and start the loopback-only local stack
-        run: docker compose up --build --detach --wait --wait-timeout 240
-      - name: Verify API and web health
-        run: |
-          curl --fail --show-error --silent http://127.0.0.1:8000/health
-          curl --fail --show-error --silent http://127.0.0.1:3000/ >/dev/null
-          docker compose ps
+      - name: Run the public one-command quickstart
+        run: python3 scripts/quickstart.py --no-open --wait-timeout 240
+      - name: Verify quickstart status and host health
+        run: python3 scripts/quickstart.py status
       - name: Show service logs after a failure
         if: failure()
         run: docker compose logs --no-color --tail=200
-      - name: Stop the local stack
+      - name: Stop the local stack and delete CI data
         if: always()
-        run: docker compose down --volumes --remove-orphans
+        run: python3 scripts/quickstart.py stop --delete-data

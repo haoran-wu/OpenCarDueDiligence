@@ -13,7 +13,7 @@ still missing.
 | Buyer decisions | Deterministic `STOP / INSPECT / NEGOTIATE / BUY_CANDIDATE` analysis with unknown-evidence and evidence-coverage gates is implemented. |
 | Listing and comparison | User-triggered extension capture, manual Web import, structured JSON API import, watchlist price history, conservative same-seller-type/reference-kind comparable selection, and multi-car comparison are implemented. CSV files can be preserved and parsed as evidence artifacts, but v0.1 does not yet turn arbitrary CSV rows into listing snapshots. Comparable admission is strict only for the configuration fields actually supplied; missing configuration stays unknown and cannot be treated as a match. Listing platforms are recorded but not yet separated into independent valuation populations. |
 | History documents | Text-first PDF processing, OCR fallback, page/date/mileage provenance, and contradiction checks are implemented. |
-| Inspection and diagnostics | Five-stage checklist, manual scan import, read-only BLE ELM327 bridge, diagnostic branches, and four repair channels are implemented. |
+| Inspection and diagnostics | Five-stage checklist and manual generic-OBD Web entry are implemented. Structured scan ingestion, a read-only BLE ELM327 bridge service, diagnostic branches, and four repair channels exist in the backend. Direct Web BLE pairing, scan-file upload, and the full scenario/channel cost UI are not implemented. |
 | Negotiation | Traceable target/opening/ceiling calculation and four-stage bilingual message drafting are implemented. Messages are never sent automatically. |
 | Transaction planning | NJ/NY/CT rule bundles, legal-drive-away gates, and official-source freshness checks are implemented. The Web form and offline demonstration plan have bilingual UI copy, but authoritative server-generated state-rule tasks are currently English source text. Unreviewed rules remain `INSPECT` and require DMV confirmation. |
 | User interfaces | API-first bilingual Next.js PWA, traceable JSON/PDF report flow, Chrome MV3 extension, loading/empty/error states, and local/cloud Compose manifests are implemented. PDF findings resolve stable evidence IDs to available provider/page/locator/reference data. Chinese reports localize fixed system prose; evidence excerpts, provider names, user-entered text, and external DTC descriptions remain verbatim and are explicitly labeled as source text. The project does not claim general-purpose translation of third-party evidence. Chinese PDFs embed the bundled OFL-licensed Noto Sans SC font; missing or unusable font assets fail closed, and automated acceptance checks cover both extracted text and Poppler raster output. |
@@ -28,7 +28,11 @@ still missing.
   `ValuationResult` does not yet expose a separate repair-adjusted vehicle-value
   field or a calibrated one-year abnormal-repair forecast.
 - The open repair-cost model has scenario ranges and four shop channels, but no
-  licensed ZIP3 labor-time/rate corpus or validated invoice corpus.
+  licensed ZIP3 labor-time/rate corpus or validated invoice corpus. The Web UI
+  currently summarizes a broad exposure range rather than exposing every
+  minimum/likely/worst diagnostic branch and shop-channel estimate.
+- All 20 model-family packs remain publication-gated DRAFT material, so the
+  runnable buyer UI does not yet provide model-specific reliability claims.
 - NHTSA VIN decoding and model-level recall signals are present; complaint,
   TSB, and NCAP ingestion are not yet implemented.
 - The state-rule server returns authoritative task text in English. Full
@@ -51,24 +55,24 @@ still missing.
    allowlist and Mode 04/write rejection, not real-radio compatibility.
 4. The loopback-only local Compose stack is built, started, health-checked, and
    torn down in GitHub Actions. The cloud reference stack still needs an
-   end-to-end acceptance run with PostgreSQL, Redis, and an S3-compatible
+   end-to-end acceptance run with PostgreSQL, Valkey, and an S3-compatible
    object store; static manifest validation does not replace that test.
 5. A public deployment needs managed KMS, TLS, secret rotation, a distributed
    rate limiter or gateway, monitoring, backups, and an independently operated
    one-hour artifact purger. Development credentials in the reference Compose
    file are never production credentials.
-6. Deterministic analysis works without any LLM. Anthropic and Ollama adapter
-   modules have isolated contract tests but are not yet exposed as an
-   end-to-end report or UI route. An OpenAI adapter is intentionally not
-   implemented or configured until the operator explicitly chooses and
-   supplies a new API key.
+6. Deterministic analysis works without any LLM. The optional local Ollama
+   adapter has isolated contract tests but is not yet exposed as an end-to-end
+   report or UI route. The official project ships no hosted or paid LLM
+   adapter and requires no API key.
 7. Meta terms review is required before publishing a formal Marketplace
    provider. The extension is deliberately limited to a user click on the
    currently visible listing and never exports cookies, background-crawls, or
    clicks Send.
-8. Commercial history, valuation, labor-time, and repair-cost sources require
-   operator credentials and compatible licenses. The open repository does not
-   redistribute CARFAX, ALLDATA, Mitchell, RepairPal, KBB, or Marketplace data.
+8. User-supplied history, valuation, labor-time, and repair-cost sources still
+   require compatible rights. The official provider registry accepts only
+   free/open data or user-supplied artifacts and does not redistribute CARFAX,
+   ALLDATA, Mitchell, RepairPal, KBB, or Marketplace data.
 
 ## Release evidence
 

@@ -60,6 +60,57 @@ describe("web API client", () => {
     await expect(api.listCases()).resolves.toEqual([]);
   });
 
+  it("deletes exactly one case with its capability in a header", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(new Response(null, { status: 204 }));
+
+    await api.deleteCase("cloud-case-1", { accessToken: token });
+
+    expect(String(fetchMock.mock.calls[0][0])).toBe("http://127.0.0.1:8000/v1/cases/cloud-case-1");
+    expect(fetchMock.mock.calls[0][1]).toMatchObject({
+      method: "DELETE",
+      credentials: "omit",
+      headers: expect.objectContaining({ "X-OCDD-Case-Token": token }),
+    });
+    expect(String(fetchMock.mock.calls[0][0])).not.toContain(token);
+  });
+
+  it("decodes a VIN only through the local API and keeps the full mechanical VehicleSpec", async () => {
+    const vin = "1TESTCAR000000001";
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(new Response(JSON.stringify({
+      vin,
+      decodeValid: true,
+      vehicle: {
+        vin,
+        year: 2014,
+        make: "MINI",
+        model: "Hardtop",
+        trim: "Cooper S",
+        engine: "B48 / 2.0L / 4 cylinders / In-Line",
+        transmission: "Automatic / 6 speeds",
+        drivetrain: "FWD/Front-Wheel Drive",
+        fuelType: "gasoline",
+        bodyStyle: "Hatchback/Liftback/Notchback",
+      },
+      decodedFields: {},
+      source: { provider: "NHTSA vPIC", sourceUrl: "https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValuesExtended/example" },
+      documentationUrl: "https://vpic.nhtsa.dot.gov/api/Home/Index",
+      limitations: ["A decode does not verify title."],
+    }), { status: 200, headers: { "Content-Type": "application/json" } }));
+
+    const decoded = await api.decodeVin(vin, 2014);
+
+    expect(String(fetchMock.mock.calls[0][0])).toBe("http://127.0.0.1:8000/v1/vehicles/decode-vin");
+    expect(JSON.parse(String((fetchMock.mock.calls[0][1] as RequestInit).body))).toEqual({ vin, modelYear: 2014 });
+    expect(decoded.vehicle).toMatchObject({
+      engine: "B48 / 2.0L / 4 cylinders / In-Line",
+      transmission: "Automatic / 6 speeds",
+      drivetrain: "FWD/Front-Wheel Drive",
+      fuel_type: "gasoline",
+      body_style: "Hatchback/Liftback/Notchback",
+    });
+    expect(String(fetchMock.mock.calls[0][0])).not.toContain(vin);
+  });
+
   it("posts an admitted-comparable candidate with is_target false and exact matching facts", async () => {
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(new Response(JSON.stringify({
       caseId: "cloud-case-1",

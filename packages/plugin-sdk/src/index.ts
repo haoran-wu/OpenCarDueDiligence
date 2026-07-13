@@ -9,6 +9,7 @@ export interface ProviderPolicy {
   id: string;
   displayName: string;
   license: string;
+  accessCost: "free" | "user-supplied-artifact";
   credentialPolicy: "none" | "bring-your-own" | "server-managed";
   retentionPolicy: string;
   redistributionAllowed: boolean;

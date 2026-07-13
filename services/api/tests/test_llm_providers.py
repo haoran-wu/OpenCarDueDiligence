@@ -8,16 +8,12 @@ import httpx
 import pytest
 
 from app.plugins import LLMProvider, validate_plugin_metadata
-from app.providers.anthropic import (
-    ANTHROPIC_API_VERSION,
-    AnthropicLLMProvider,
-)
 from app.providers.llm_common import (
     LLMOutputRejected,
     LLMProviderConfigurationError,
     LLMProviderUnavailable,
 )
-from app.providers.llm_factory import create_optional_non_openai_llm_provider
+from app.providers.llm_factory import create_optional_local_llm_provider
 from app.providers.ollama import OllamaLLMProvider
 
 
@@ -25,7 +21,16 @@ def _run(provider: LLMProvider, facts: dict[str, object], language: str = "en") 
     return asyncio.run(provider.explain(facts, language))
 
 
-def test_anthropic_renders_only_grounded_facts_without_mutating_input() -> None:
+def _ollama_transport(response_text: str) -> httpx.MockTransport:
+    return httpx.MockTransport(
+        lambda request: httpx.Response(
+            200,
+            json={"done": True, "done_reason": "stop", "response": response_text},
+        )
+    )
+
+
+def test_ollama_renders_only_grounded_facts_without_mutating_input() -> None:
     facts: dict[str, object] = {
         "decision": "NEGOTIATE",
         "opening": 5200,
@@ -35,32 +40,27 @@ def test_anthropic_renders_only_grounded_facts_without_mutating_input() -> None:
 
     def handler(request: httpx.Request) -> httpx.Response:
         assert request.method == "POST"
-        assert str(request.url) == "https://api.anthropic.com/v1/messages"
-        assert request.headers["x-api-key"] == "test-secret"
-        assert request.headers["anthropic-version"] == ANTHROPIC_API_VERSION
-        payload = request.read().decode("utf-8")
-        assert "<deterministic_facts>" in payload
-        assert "NEGOTIATE" in payload
-        assert "5200" in payload
-        assert "UNKNOWN" in payload
+        assert str(request.url) == "http://127.0.0.1:11434/api/generate"
+        payload = json.loads(request.read())
+        assert payload["stream"] is False
+        assert payload["options"]["temperature"] == 0
+        assert "<deterministic_facts>" in payload["prompt"]
+        assert "NEGOTIATE" in payload["prompt"]
+        assert "5200" in payload["prompt"]
+        assert "UNKNOWN" in payload["prompt"]
         return httpx.Response(
             200,
             json={
-                "stop_reason": "end_turn",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": (
-                            "The deterministic decision is NEGOTIATE and the opening "
-                            "is $5,200. ABS coverage is UNKNOWN."
-                        ),
-                    }
-                ],
+                "done": True,
+                "done_reason": "stop",
+                "response": (
+                    "The deterministic decision is NEGOTIATE and the opening "
+                    "is $5,200. ABS coverage is UNKNOWN."
+                ),
             },
         )
 
-    provider = AnthropicLLMProvider(
-        api_key="test-secret",
+    provider = OllamaLLMProvider(
         model="test-model",
         transport=httpx.MockTransport(handler),
     )
@@ -70,6 +70,7 @@ def test_anthropic_renders_only_grounded_facts_without_mutating_input() -> None:
     assert facts == original
     assert isinstance(provider, LLMProvider)
     validate_plugin_metadata(provider.metadata)
+    assert provider.metadata.access_cost == "free"
     assert "in memory only" in provider.metadata.credential_storage
     assert "retains no prompts" in provider.metadata.retention_policy
 
@@ -99,35 +100,27 @@ def test_anthropic_renders_only_grounded_facts_without_mutating_input() -> None:
         ),
     ],
 )
-def test_anthropic_rejects_prose_that_changes_facts(
+def test_ollama_rejects_prose_that_changes_facts(
     facts: dict[str, object], generated: str, message: str
 ) -> None:
-    provider = AnthropicLLMProvider(
-        api_key="test-secret",
+    provider = OllamaLLMProvider(
         model="test-model",
-        transport=httpx.MockTransport(
-            lambda request: httpx.Response(
-                200,
-                json={
-                    "stop_reason": "end_turn",
-                    "content": [{"type": "text", "text": generated}],
-                },
-            )
-        ),
+        transport=_ollama_transport(generated),
     )
 
     with pytest.raises(LLMOutputRejected, match=message):
         _run(provider, facts)
 
 
-def test_anthropic_fails_closed_for_missing_credentials_and_http_errors() -> None:
-    with pytest.raises(LLMProviderConfigurationError, match="API key"):
-        AnthropicLLMProvider(api_key="", model="test-model")
+def test_ollama_fails_closed_for_missing_model_and_http_errors() -> None:
+    with pytest.raises(LLMProviderConfigurationError, match="model"):
+        OllamaLLMProvider(model="")
 
     secret = "must-not-appear"
-    provider = AnthropicLLMProvider(
-        api_key=secret,
+    provider = OllamaLLMProvider(
         model="test-model",
+        base_url="https://ollama.example",
+        api_key=secret,
         transport=httpx.MockTransport(
             lambda request: httpx.Response(401, json={"error": "denied"})
         ),
@@ -137,34 +130,10 @@ def test_anthropic_fails_closed_for_missing_credentials_and_http_errors() -> Non
     assert secret not in str(captured.value)
 
 
-def test_anthropic_rejects_truncated_or_malformed_responses() -> None:
-    provider = AnthropicLLMProvider(
-        api_key="test-secret",
-        model="test-model",
-        transport=httpx.MockTransport(
-            lambda request: httpx.Response(
-                200,
-                json={"stop_reason": "max_tokens", "content": []},
-            )
-        ),
-    )
-    with pytest.raises(LLMProviderUnavailable, match="truncated"):
-        _run(provider, {"decision": "INSPECT"})
-
-
 def test_decision_validation_does_not_confuse_inspect_first_with_inspect() -> None:
-    provider = AnthropicLLMProvider(
-        api_key="test-secret",
+    provider = OllamaLLMProvider(
         model="test-model",
-        transport=httpx.MockTransport(
-            lambda request: httpx.Response(
-                200,
-                json={
-                    "stop_reason": "end_turn",
-                    "content": [{"type": "text", "text": "Decision: INSPECT."}],
-                },
-            )
-        ),
+        transport=_ollama_transport("Decision: INSPECT."),
     )
     with pytest.raises(LLMOutputRejected, match="protected decision"):
         _run(provider, {"decision": "INSPECT_FIRST"})
@@ -246,22 +215,17 @@ def test_ollama_rejects_incomplete_response_and_invalid_language() -> None:
         _run(provider, {"decision": "INSPECT"})
 
 
-def test_environment_factory_is_disabled_by_default_and_fails_closed() -> None:
-    assert create_optional_non_openai_llm_provider(environ={}) is None
-    assert create_optional_non_openai_llm_provider(
+def test_environment_factory_is_disabled_by_default_and_local_only() -> None:
+    assert create_optional_local_llm_provider(environ={}) is None
+    assert create_optional_local_llm_provider(
         environ={"OCDD_LLM_PROVIDER": "disabled"}
     ) is None
 
     with pytest.raises(LLMProviderConfigurationError, match="model"):
-        create_optional_non_openai_llm_provider(
+        create_optional_local_llm_provider(
             environ={"OCDD_LLM_PROVIDER": "ollama"}
         )
-    with pytest.raises(LLMProviderConfigurationError, match="API key"):
-        create_optional_non_openai_llm_provider(
-            environ={
-                "OCDD_LLM_PROVIDER": "anthropic",
-                "OCDD_ANTHROPIC_MODEL": "test-model",
-            }
-        )
     with pytest.raises(LLMProviderConfigurationError, match="must be"):
-        create_optional_non_openai_llm_provider(provider="unsupported", environ={})
+        create_optional_local_llm_provider(provider="anthropic", environ={})
+    with pytest.raises(LLMProviderConfigurationError, match="must be"):
+        create_optional_local_llm_provider(provider="unsupported", environ={})

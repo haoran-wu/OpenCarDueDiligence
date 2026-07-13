@@ -31,6 +31,27 @@ export interface VehicleSpec {
   body_style?: string;
 }
 
+export interface VinDecodeResponse {
+  vin: string;
+  decodeValid: boolean;
+  errorCode?: string;
+  errorText?: string;
+  vehicle: VehicleSpec;
+  manufacturer?: string;
+  vehicleType?: string;
+  plantCity?: string;
+  plantCountry?: string;
+  decodedFields: Record<string, string>;
+  source: {
+    provider: string;
+    sourceUrl?: string;
+    observedAt?: string;
+    contentSha256?: string;
+  };
+  documentationUrl: string;
+  limitations: string[];
+}
+
 export interface ListingImportInput {
   source_url?: string;
   title: string;
@@ -93,7 +114,7 @@ export interface ListingSnapshot {
   id: string;
   source_url?: string;
   title: string;
-  asking_price: number;
+  asking_price?: number;
   mileage?: number;
   currency: string;
   location?: string;
@@ -179,6 +200,7 @@ export interface CaseRecord {
   status: CaseStatus;
   decision: Decision;
   vehicle: VehicleSpec;
+  all_in_budget?: number;
   listing: ListingSnapshot;
   comparable_listings?: ListingSnapshot[];
   coverage_percent: number;
@@ -196,9 +218,9 @@ export interface CaseRecord {
 export interface NegotiationRequest {
   phase: "initial_contact" | "conditional_offer" | "post_ppi" | "walk_away";
   language: Language;
-  asking_price: number;
-  market_baseline: number;
-  all_in_budget: number;
+  asking_price?: number;
+  market_baseline?: number;
+  all_in_budget?: number;
   evidence_coverage: number;
   adjustments: Array<{
     label: string;
@@ -231,9 +253,9 @@ export interface TransactionContextInput {
   sale_state: "NJ" | "NY" | "CT";
   title_state: "NJ" | "NY" | "CT";
   seller_type: "private" | "dealer";
-  title_name_matches: boolean;
-  vin_matches: boolean;
-  original_title_present: boolean;
+  title_status: "UNKNOWN" | "ORIGINAL" | "MISSING" | "ALTERED" | "ALREADY_ASSIGNED" | "BRANDED";
+  identity_title_match: "UNKNOWN" | "MATCH" | "MISMATCH";
+  vin_match: "UNKNOWN" | "MATCH" | "MISMATCH";
   seller_allows_ppi: boolean | null;
   seller_allows_bill_of_sale: boolean | null;
   seller_discloses_odometer: boolean | null;
