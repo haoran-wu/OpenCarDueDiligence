@@ -1,5 +1,33 @@
 import { describe, expect, it } from "vitest";
 import { caseAccessHeaders, listingApiPayload, sanitizeListing } from "../src/payload";
+import { listingChannelFromUrl } from "../src/provider";
+
+describe("listing provider URL classification", () => {
+  it.each([
+    ["https://facebook.com/marketplace/item/1", "facebook_marketplace"],
+    ["https://m.facebook.com/marketplace/item/1", "facebook_marketplace"],
+    ["https://newyork.craigslist.org/cto/d/example/1.html", "craigslist"],
+    ["https://www.cars.com/vehicledetail/example/", "cars_com"],
+    ["https://inventory.autotrader.com/cars-for-sale/example", "autotrader"],
+    ["https://user:password@facebook.com:8443/marketplace/item/1", "facebook_marketplace"],
+  ])("classifies a legitimate provider URL %s", (url, expected) => {
+    expect(listingChannelFromUrl(url)).toBe(expected);
+  });
+
+  it.each([
+    "https://facebook.com.evil.example/marketplace/item/1",
+    "https://evilfacebook.com/marketplace/item/1",
+    "https://facebook.com@evil.example/marketplace/item/1",
+    "https://cars.com.evil.example/vehicledetail/1",
+    "https://notautotrader.com/cars-for-sale/1",
+    "ftp://facebook.com/marketplace/item/1",
+    "javascript:https://facebook.com/marketplace/item/1",
+    "not a url",
+  ])("rejects a lookalike, non-http(s), or invalid URL %s", (url) => {
+    expect(listingChannelFromUrl(url)).toBe("general_web");
+    expect(sanitizeListing({ source_url: url, title: "Car" }).channel).toBe("general_web");
+  });
+});
 
 describe("extension payload privacy boundary", () => {
   it("keeps only explicit listing fields", () => {

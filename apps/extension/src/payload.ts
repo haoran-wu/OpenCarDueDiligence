@@ -1,4 +1,5 @@
 import type { ExtractedListing } from "./types";
+import { listingChannelFromUrl } from "./provider";
 
 function text(value: unknown, max: number): string | undefined {
   if (typeof value !== "string") return undefined;
@@ -13,16 +14,7 @@ function positiveNumber(value: unknown): number | undefined {
 
 export function sanitizeListing(input: Partial<ExtractedListing>): ExtractedListing {
   const url = text(input.source_url, 2048) || "";
-  const parsed = (() => { try { return new URL(url); } catch { return undefined; } })();
-  const channel = parsed?.hostname.includes("facebook.com")
-    ? "facebook_marketplace"
-    : parsed?.hostname.includes("craigslist.org")
-      ? "craigslist"
-      : parsed?.hostname.includes("cars.com")
-        ? "cars_com"
-        : parsed?.hostname.includes("autotrader.com")
-          ? "autotrader"
-          : "general_web";
+  const channel = listingChannelFromUrl(url);
   const vin = text(input.vin, 17)?.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, "");
 
   return {

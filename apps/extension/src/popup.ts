@@ -1,5 +1,6 @@
 import "./popup.css";
 import { caseAccessHeaders, listingApiPayload, sanitizeListing } from "./payload";
+import { listingChannelFromUrl } from "./provider";
 import type { ComposerTarget, ExtractedListing } from "./types";
 
 const $ = <T extends HTMLElement>(selector: string) => {
@@ -31,14 +32,14 @@ function showStatus(message: string, kind: "ok" | "error" | "info" = "info") {
   }, 4200);
 }
 
-async function activeTabId(): Promise<number> {
+async function activeTab(): Promise<{ id: number; url: string }> {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab?.id) throw new Error("No active web page is available.");
   if (!tab.url || !/^https?:/i.test(tab.url)) throw new Error("Open a normal http(s) listing page first.");
-  return tab.id;
+  return { id: tab.id, url: tab.url };
 }
 
-function extractionScript(): Partial<ExtractedListing> {
+function extractionScript(channel: ExtractedListing["channel"]): Partial<ExtractedListing> {
   const normalized = (value: string | null | undefined) => (value || "").replace(/\s+/g, " ").trim();
   const visible = (element: Element) => {
     const rect = element.getBoundingClientRect();
@@ -52,17 +53,6 @@ function extractionScript(): Partial<ExtractedListing> {
     .filter((element) => visible(element) && !isPrivateUi(element))
     .map((element) => normalized(element.textContent))
     .filter((value) => value.length > 0 && value.length < 220);
-
-  const host = location.hostname.toLowerCase();
-  const channel = host.includes("facebook.com")
-    ? "facebook_marketplace"
-    : host.includes("craigslist.org")
-      ? "craigslist"
-      : host.includes("cars.com")
-        ? "cars_com"
-        : host.includes("autotrader.com")
-          ? "autotrader"
-          : "general_web";
 
   let structured: Record<string, unknown> | undefined;
   for (const script of Array.from(document.querySelectorAll<HTMLScriptElement>('script[type="application/ld+json"]'))) {
@@ -231,8 +221,12 @@ extractButton.addEventListener("click", async () => {
   extractButton.disabled = true;
   extractButton.textContent = "Extracting…";
   try {
-    const tabId = await activeTabId();
-    const [{ result }] = await chrome.scripting.executeScript({ target: { tabId }, func: extractionScript });
+    const tab = await activeTab();
+    const [{ result }] = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: extractionScript,
+      args: [listingChannelFromUrl(tab.url)],
+    });
     currentListing = sanitizeListing(result || {});
     setInput("listing-title", currentListing.title);
     setInput("listing-price", currentListing.asking_price);
@@ -294,8 +288,8 @@ inspectTargetButton.addEventListener("click", async () => {
   const message = messageText.value.trim();
   if (!message) return showStatus("Paste a reviewed message first.", "error");
   try {
-    const tabId = await activeTabId();
-    const [{ result }] = await chrome.scripting.executeScript({ target: { tabId }, func: composerInspectionScript });
+    const tab = await activeTab();
+    const [{ result }] = await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: composerInspectionScript });
     currentTarget = result;
     targetPreview.classList.remove("hidden");
     if (!result?.found) {
@@ -328,9 +322,9 @@ allowOverwrite.addEventListener("change", () => {
 fillMessageButton.addEventListener("click", async () => {
   if (!currentTarget?.found) return showStatus("Preview the page target again.", "error");
   try {
-    const tabId = await activeTabId();
+    const tab = await activeTab();
     const [{ result }] = await chrome.scripting.executeScript({
-      target: { tabId },
+      target: { tabId: tab.id },
       func: fillComposerScript,
       args: [messageText.value.trim(), allowOverwrite.checked],
     });
