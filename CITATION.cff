@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: >-
+  If you use this alpha software in research, please cite the repository and
+  the exact commit you evaluated.
+title: OpenCarDueDiligence
+type: software
+version: 0.1.0-alpha
+authors:
+  - name: OpenCarDueDiligence contributors
+abstract: >-
+  Evidence-first, bilingual decision-support software for U.S. private-party
+  used-car due diligence, inspection, valuation, negotiation, and transaction
+  planning. The application is alpha software; separate repository paths and
+  data assets may use licenses other than the main AGPL license.
+license: AGPL-3.0-or-later
+repository-code: https://github.com/haoran-wu/OpenCarDueDiligence
+keywords:
+  - used cars
+  - due diligence
+  - vehicle inspection
+  - OBD-II
+  - evidence provenance
+  - decision support

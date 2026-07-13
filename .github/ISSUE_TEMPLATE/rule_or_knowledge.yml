@@ -1,0 +1,70 @@
+name: Rule or vehicle-knowledge proposal
+description: Propose a DMV, diagnostic, repair, or exact-vehicle knowledge change
+title: "[Evidence proposal]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Unreviewed legal, safety, model-specific, and repair claims remain DRAFT/UNKNOWN. Do not submit proprietary report text, labor-guide content, or a community anecdote as a confirmed defect.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Proposal type
+      options:
+        - State/DMV transaction rule
+        - Model-family applicability or failure mode
+        - Generic DTC diagnostic branch
+        - Repair scenario or cost methodology
+        - Inspection checklist
+        - Data-provider provenance
+    validations:
+      required: true
+  - type: textarea
+    id: applicability
+    attributes:
+      label: Exact applicability
+      description: State/effective date, or year/generation/platform/engine/transmission/drivetrain/production range.
+    validations:
+      required: true
+  - type: textarea
+    id: claim
+    attributes:
+      label: Proposed claim or rule
+      description: Include severity, decision effect, and what remains unknown.
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: Primary sources
+      description: Provide official URLs/stable origins, effective and retrieval dates, and relevant locators. Paraphrase; do not paste licensed text.
+    validations:
+      required: true
+  - type: textarea
+    id: license
+    attributes:
+      label: License and redistribution basis
+      description: Explain why the proposed first-party representation can be redistributed.
+    validations:
+      required: true
+  - type: textarea
+    id: confirmation
+    attributes:
+      label: Required confirmation test and scenarios
+      description: What subject-vehicle evidence distinguishes minimum, likely, and worst reasonable scenarios?
+    validations:
+      required: true
+  - type: input
+    id: reviewer
+    attributes:
+      label: Proposed qualified reviewer
+      description: Optional. Publication still requires named human review where the governance policy says so.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I did not include personal, paid, proprietary, or non-redistributable source content.
+          required: true
+        - label: I understand this proposal remains DRAFT/UNKNOWN until its release gates are met.
+          required: true

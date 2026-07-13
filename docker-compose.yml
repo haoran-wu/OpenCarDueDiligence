@@ -1,0 +1,118 @@
+name: opencarduediligence
+
+# Bluetooth access is intentionally not containerized in the default stack.
+# Run services/obd-bridge on the host and keep it bound to 127.0.0.1:8765.
+x-ocdd-notes:
+  obd-bridge: "Host-only by design: read-only BLE access at http://127.0.0.1:8765"
+
+services:
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build:
+      context: .
+      dockerfile: services/api/Dockerfile
+    restart: unless-stopped
+    init: true
+    environment:
+      OCDD_DEPLOYMENT_MODE: local
+      OCDD_ENV: local
+      OCDD_DATABASE_PATH: /data/ocdd.sqlite3
+      OCDD_DATA_ROOT: /app/data
+      OCDD_ARTIFACT_TTL_SECONDS: ${OCDD_ARTIFACT_TTL_SECONDS:-3600}
+      OCDD_REDIS_URL: redis://redis:6379/0
+      OCDD_DOCUMENT_PROCESSOR: celery
+      OCDD_DOCUMENT_PROCESSOR_TIMEOUT_SECONDS: ${OCDD_DOCUMENT_PROCESSOR_TIMEOUT_SECONDS:-45}
+      OCDD_CASE_LEASE_TTL_SECONDS: ${OCDD_CASE_LEASE_TTL_SECONDS:-300}
+      OCDD_CASE_LEASE_WAIT_SECONDS: ${OCDD_CASE_LEASE_WAIT_SECONDS:-5}
+      # Development-only default. Supply a new random 32-byte base64 key for
+      # any shared or remotely reachable deployment.
+      OCDD_WORKER_ENVELOPE_KEY: ${OCDD_WORKER_ENVELOPE_KEY:-MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=}
+      OCDD_CORS_ORIGINS: ${OCDD_CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+    volumes:
+      - ocdd-local-data:/data
+    ports:
+      - "127.0.0.1:${OCDD_API_PORT:-8000}:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  worker:
+    build:
+      context: services/worker
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    init: true
+    command:
+      - celery
+      - -A
+      - ocdd_worker.celery_app:app
+      - worker
+      - --beat
+      - --loglevel=INFO
+    environment:
+      OCDD_REDIS_URL: redis://redis:6379/0
+      OCDD_WORKER_ENVELOPE_KEY: ${OCDD_WORKER_ENVELOPE_KEY:-MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=}
+      OCDD_WORKER_TMP_DIR: /tmp/ocdd-worker
+      OCDD_STORAGE_PATH: /data/artifacts
+      OCDD_ARTIFACT_TTL_SECONDS: ${OCDD_ARTIFACT_TTL_SECONDS:-3600}
+    volumes:
+      - ocdd-local-data:/data
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_OCDD_API_URL: ${NEXT_PUBLIC_OCDD_API_URL:-http://localhost:8000}
+        NEXT_PUBLIC_OCDD_ENABLE_DEMO: ${NEXT_PUBLIC_OCDD_ENABLE_DEMO:-false}
+    restart: unless-stopped
+    init: true
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      NEXT_PUBLIC_OCDD_API_URL: ${NEXT_PUBLIC_OCDD_API_URL:-http://localhost:8000}
+      NEXT_PUBLIC_OCDD_ENABLE_DEMO: ${NEXT_PUBLIC_OCDD_ENABLE_DEMO:-false}
+    ports:
+      - "127.0.0.1:${OCDD_WEB_PORT:-3000}:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+volumes:
+  ocdd-local-data:
+  redis-data:

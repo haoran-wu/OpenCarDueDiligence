@@ -1,0 +1,216 @@
+name: opencarduediligence-cloud
+
+# This is a loopback-only, single-host reference deployment, not a public or
+# production Compose configuration. Replace every dev credential, terminate
+# TLS at an external reverse proxy, add distributed rate limiting/monitoring,
+# and use managed Postgres/Redis/S3/KMS before any public deployment.
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ocdd}
+      POSTGRES_USER: ${POSTGRES_USER:-ocdd}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ocdd-dev-only}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  minio:
+    image: quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-ocddminio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-ocdd-minio-dev-only}
+      # Static KMS keys are development-only. Use MinIO KMS/KES or a managed
+      # cloud KMS for a real deployment.
+      MINIO_KMS_SECRET_KEY: ${MINIO_KMS_SECRET_KEY:-ocdd-dev-key:MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=}
+    volumes:
+      - minio-data:/data
+    ports:
+      - "127.0.0.1:${MINIO_API_PORT:-9000}:9000"
+      - "127.0.0.1:${MINIO_CONSOLE_PORT:-9001}:9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  minio-init:
+    image: quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z
+    restart: "no"
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        set -eu
+        until mc alias set local http://minio:9000 "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}"; do sleep 2; done
+        mc mb --ignore-existing "local/$${OCDD_S3_BUCKET}"
+        mc anonymous set none "local/$${OCDD_S3_BUCKET}"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-ocddminio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-ocdd-minio-dev-only}
+      OCDD_S3_BUCKET: ${OCDD_S3_BUCKET:-ocdd-transient}
+    depends_on:
+      minio:
+        condition: service_healthy
+
+  api:
+    build:
+      context: .
+      dockerfile: services/api/Dockerfile
+    restart: unless-stopped
+    init: true
+    environment:
+      OCDD_DEPLOYMENT_MODE: cloud
+      OCDD_ENV: cloud
+      OCDD_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-ocdd}:${POSTGRES_PASSWORD:-ocdd-dev-only}@postgres:5432/${POSTGRES_DB:-ocdd}
+      OCDD_DATA_ROOT: /app/data
+      OCDD_REDIS_URL: redis://redis:6379/0
+      OCDD_DOCUMENT_PROCESSOR: celery
+      OCDD_DOCUMENT_PROCESSOR_TIMEOUT_SECONDS: ${OCDD_DOCUMENT_PROCESSOR_TIMEOUT_SECONDS:-45}
+      # Intentionally no cloud default. API startup fails closed until the
+      # operator supplies the same random 32-byte base64 key to API and worker.
+      OCDD_WORKER_ENVELOPE_KEY: ${OCDD_WORKER_ENVELOPE_KEY:-}
+      OCDD_ARTIFACT_TTL_SECONDS: ${OCDD_ARTIFACT_TTL_SECONDS:-3600}
+      OCDD_ARTIFACT_PURGE_INTERVAL_SECONDS: ${OCDD_ARTIFACT_PURGE_INTERVAL_SECONDS:-60}
+      OCDD_ARTIFACT_EXPIRY_SAFETY_MARGIN_SECONDS: ${OCDD_ARTIFACT_EXPIRY_SAFETY_MARGIN_SECONDS:-300}
+      OCDD_ARTIFACT_MAX_BYTES: ${OCDD_ARTIFACT_MAX_BYTES:-10485760}
+      OCDD_ARTIFACT_REQUEST_MAX_BYTES: ${OCDD_ARTIFACT_REQUEST_MAX_BYTES:-14046552}
+      OCDD_CLOUD_CASE_CREATE_PER_MINUTE: ${OCDD_CLOUD_CASE_CREATE_PER_MINUTE:-30}
+      OCDD_CLOUD_ARTIFACT_UPLOAD_PER_MINUTE: ${OCDD_CLOUD_ARTIFACT_UPLOAD_PER_MINUTE:-20}
+      OCDD_CASE_LEASE_TTL_SECONDS: ${OCDD_CASE_LEASE_TTL_SECONDS:-300}
+      OCDD_CASE_LEASE_WAIT_SECONDS: ${OCDD_CASE_LEASE_WAIT_SECONDS:-5}
+      OCDD_S3_ENDPOINT_URL: http://minio:9000
+      OCDD_S3_BUCKET: ${OCDD_S3_BUCKET:-ocdd-transient}
+      OCDD_S3_PREFIX: ${OCDD_S3_PREFIX:-ocdd-transient}
+      OCDD_S3_REGION: ${OCDD_S3_REGION:-us-east-1}
+      OCDD_S3_SSE: AES256
+      OCDD_S3_CONNECT_TIMEOUT_SECONDS: ${OCDD_S3_CONNECT_TIMEOUT_SECONDS:-5}
+      OCDD_S3_READ_TIMEOUT_SECONDS: ${OCDD_S3_READ_TIMEOUT_SECONDS:-10}
+      OCDD_S3_MAX_ATTEMPTS: ${OCDD_S3_MAX_ATTEMPTS:-3}
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-ocddminio}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-ocdd-minio-dev-only}
+      AWS_DEFAULT_REGION: ${OCDD_S3_REGION:-us-east-1}
+      OCDD_CORS_ORIGINS: ${OCDD_CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+    ports:
+      - "127.0.0.1:${OCDD_API_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 15s
+
+  artifact-purger:
+    build:
+      context: .
+      dockerfile: services/api/Dockerfile
+    command: ["python", "-m", "app.artifact_purger"]
+    restart: unless-stopped
+    init: true
+    environment:
+      # This process has no dependency on FastAPI, PostgreSQL, or Redis. It
+      # scans only the dedicated transient prefix and exits on purge failure so
+      # the container restart policy can retry.
+      OCDD_ARTIFACT_PURGE_INTERVAL_SECONDS: ${OCDD_ARTIFACT_PURGE_INTERVAL_SECONDS:-60}
+      OCDD_ARTIFACT_PURGER_HEALTH_MAX_AGE_SECONDS: ${OCDD_ARTIFACT_PURGER_HEALTH_MAX_AGE_SECONDS:-180}
+      OCDD_S3_ENDPOINT_URL: http://minio:9000
+      OCDD_S3_BUCKET: ${OCDD_S3_BUCKET:-ocdd-transient}
+      OCDD_S3_PREFIX: ${OCDD_S3_PREFIX:-ocdd-transient}
+      OCDD_S3_REGION: ${OCDD_S3_REGION:-us-east-1}
+      OCDD_S3_CONNECT_TIMEOUT_SECONDS: ${OCDD_S3_CONNECT_TIMEOUT_SECONDS:-5}
+      OCDD_S3_READ_TIMEOUT_SECONDS: ${OCDD_S3_READ_TIMEOUT_SECONDS:-10}
+      OCDD_S3_MAX_ATTEMPTS: ${OCDD_S3_MAX_ATTEMPTS:-3}
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-ocddminio}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-ocdd-minio-dev-only}
+      AWS_DEFAULT_REGION: ${OCDD_S3_REGION:-us-east-1}
+    depends_on:
+      minio-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-m", "app.artifact_purger", "--healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  worker:
+    build:
+      context: services/worker
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    init: true
+    environment:
+      OCDD_REDIS_URL: redis://redis:6379/0
+      OCDD_WORKER_ENVELOPE_KEY: ${OCDD_WORKER_ENVELOPE_KEY:-}
+      OCDD_WORKER_TMP_DIR: /tmp/ocdd-worker
+      OCDD_STORAGE_PATH: /tmp/ocdd-worker
+      OCDD_ARTIFACT_TTL_SECONDS: ${OCDD_ARTIFACT_TTL_SECONDS:-3600}
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_OCDD_API_URL: ${NEXT_PUBLIC_OCDD_API_URL:-http://localhost:8000}
+        NEXT_PUBLIC_OCDD_ENABLE_DEMO: ${NEXT_PUBLIC_OCDD_ENABLE_DEMO:-false}
+    restart: unless-stopped
+    init: true
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      NEXT_PUBLIC_OCDD_API_URL: ${NEXT_PUBLIC_OCDD_API_URL:-http://localhost:8000}
+      NEXT_PUBLIC_OCDD_ENABLE_DEMO: ${NEXT_PUBLIC_OCDD_ENABLE_DEMO:-false}
+    ports:
+      - "127.0.0.1:${OCDD_WEB_PORT:-3000}:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+volumes:
+  postgres-data:
+  redis-data:
+  minio-data:

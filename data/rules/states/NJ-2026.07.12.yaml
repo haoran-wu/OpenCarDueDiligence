@@ -1,0 +1,93 @@
+{
+  "schema_version": "1.0",
+  "bundle_version": "2026.07.12",
+  "jurisdiction": "NJ",
+  "sale_type": "private_party",
+  "rules_effective_as_of": "2026-07-12",
+  "verified_at": "2026-07-12",
+  "refresh_after_days": 90,
+  "license": "CC-BY-SA-4.0",
+  "rule_inheritance": {"hard_stops_from": "../common/private_sale_v1.yaml"},
+  "monitoring": {"official_source_hash_interval_days": 7, "content_hash_status": "BASELINED_2026-07-12", "fingerprint_manifest": "../source_fingerprints.json", "stale_after_days": 90},
+  "provenance": {
+    "publisher": "OpenCarDueDiligence contributors",
+    "authority_class": "official_state_sources_only",
+    "human_reviewed": false,
+    "review_status": "OFFICIAL_SOURCES_CHECKED_HUMAN_SIGNOFF_PENDING"
+  },
+  "sources": [
+    {
+      "id": "nj-preowned-title",
+      "title": "NJ MVC - Pre-owned Vehicle Title",
+      "url": "https://www.nj.gov/mvc/vehicles/preowntitle.htm",
+      "publisher": "New Jersey Motor Vehicle Commission",
+      "verified_at": "2026-07-12",
+      "supports": ["documents", "forms", "title_fees", "insurance", "out_of_state_title"]
+    },
+    {
+      "id": "nj-transfer-ownership",
+      "title": "NJ MVC - Transferring Vehicle Ownership",
+      "url": "https://www.nj.gov/mvc/vehicles/transowner.htm",
+      "publisher": "New Jersey Motor Vehicle Commission",
+      "verified_at": "2026-07-12",
+      "supports": ["seller_tasks", "buyer_tasks", "plates", "odometer", "deadline"]
+    },
+    {
+      "id": "nj-casual-sales-tax",
+      "title": "NJ Division of Taxation - Motor Vehicle Casual Sales FAQ",
+      "url": "https://www.nj.gov/treasury/taxation/moveqa.shtml",
+      "publisher": "New Jersey Division of Taxation",
+      "verified_at": "2026-07-13",
+      "supports": ["sales_tax"]
+    },
+    {
+      "id": "nj-vehicle-centers",
+      "title": "NJ MVC - Agency Services",
+      "url": "https://www.nj.gov/mvc/locations/agency_services.htm",
+      "publisher": "New Jersey Motor Vehicle Commission",
+      "verified_at": "2026-07-12",
+      "supports": ["appointment"]
+    },
+    {
+      "id": "nj-temp-nonresident",
+      "title": "NJ MVC - Temporary Non-Resident Registration",
+      "url": "https://www.nj.gov/mvc/vehicles/tempnonres.htm",
+      "publisher": "New Jersey Motor Vehicle Commission",
+      "verified_at": "2026-07-12",
+      "supports": ["nonresident_transport"]
+    }
+  ],
+  "forms": [
+    {"id": "BA-49", "name": "Vehicle Registration Application", "required_when": "registering_in_NJ", "availability": "MVC agency"},
+    {"id": "OS-SS-UTA", "name": "Universal Title Application", "required_when": "title_state_is_not_NJ", "url": "https://www.nj.gov/mvc/pdf/vehicles/OS-SS-UTA.pdf"}
+  ],
+  "fees": [
+    {"id": "title_standard", "amount_usd": 60.0, "condition": "no_lien", "source_id": "nj-preowned-title"},
+    {"id": "title_one_lien", "amount_usd": 85.0, "condition": "one_lien", "source_id": "nj-preowned-title"},
+    {"id": "title_two_liens", "amount_usd": 110.0, "condition": "two_liens", "source_id": "nj-preowned-title"},
+    {"id": "late_title_transfer", "amount_usd": 25.0, "condition": "after_10_working_days", "source_id": "nj-transfer-ownership"},
+    {"id": "registration", "amount_usd": null, "condition": "varies_by_vehicle", "source_id": "nj-preowned-title"},
+    {"id": "sales_tax", "rate": 0.06625, "basis": "actual_purchase_price_unless_exempt_or_state_inquiry_adjustment", "source_id": "nj-casual-sales-tax"},
+    {"id": "nonresident_temporary_registration", "amount_usd": 5.0, "condition": "non_NJ_resident_buys_in_NJ", "source_id": "nj-temp-nonresident"}
+  ],
+  "deadlines": [
+    {"id": "title_transfer", "duration": 10, "unit": "working_days", "anchor": "sale_date", "consequence": "$25 late penalty", "source_id": "nj-transfer-ownership"},
+    {"id": "nonresident_temp_validity", "duration": 30, "unit": "calendar_days", "anchor": "issue_date", "condition": "non_NJ_resident_buys_in_NJ", "source_id": "nj-temp-nonresident"}
+  ],
+  "seller_tasks": [
+    {"id": "nj-seller-assign-title", "order": 10, "text_en": "Complete and sign the seller section of the original title; record buyer details, sale date, price, and odometer.", "text_zh": "填写并签署原始 title 的卖方栏，记录买家信息、成交日期、价格和里程。", "source_id": "nj-transfer-ownership"},
+    {"id": "nj-seller-bill-sale", "order": 20, "text_en": "Give the buyer a signed bill of sale with buyer name/address, sale date, odometer, and price.", "text_zh": "向买家提供签字的 bill of sale，包含买家姓名/地址、日期、里程和价格。", "source_id": "nj-transfer-ownership"},
+    {"id": "nj-seller-remove-plates", "order": 30, "text_en": "Remove the seller's plates; transfer or surrender them, but never leave them for the buyer.", "text_zh": "卖家拆下车牌并转用或交回，绝不能把卖家车牌留给买家使用。", "source_id": "nj-transfer-ownership"}
+  ],
+  "buyer_tasks": [
+    {"id": "nj-buyer-bind-insurance", "order": 10, "phase": "before_driving", "text_en": "Bind New Jersey insurance to the VIN and obtain proof of coverage.", "text_zh": "为该 VIN 购买 New Jersey 保险并取得保险凭证。", "source_id": "nj-preowned-title"},
+    {"id": "nj-buyer-appointment", "order": 20, "phase": "registration", "text_en": "Book a Vehicle Center appointment for a private-sale registration/title transfer.", "text_zh": "预约 Vehicle Center 办理私人交易 title/registration 转移。", "source_id": "nj-vehicle-centers"},
+    {"id": "nj-buyer-documents", "order": 30, "phase": "registration", "text_en": "Bring the properly assigned original title, BA-49, OS/SS-UTA for an out-of-state title, actual ID/license, proof of NJ insurance, and payment for title, registration, and tax.", "text_zh": "携带正确转签的原始 title、BA-49、外州 title 所需 OS/SS-UTA、本人证件、NJ 保险凭证及 title/registration/税费。", "source_id": "nj-preowned-title"},
+    {"id": "nj-buyer-register", "order": 40, "phase": "registration", "text_en": "Title and register within 10 working days; receive plates before driving unless another lawful permit is already valid.", "text_zh": "在 10 个工作日内完成 title 和 registration；除非已有其他有效合法 permit，否则取得车牌后再驾驶。", "source_id": "nj-transfer-ownership"}
+  ],
+  "transport_options": [
+    {"id": "tow_or_trailer", "allowed": true, "requirements": ["secure_transport_booking"]},
+    {"id": "drive_registered", "allowed": true, "requirements": ["insurance_active_for_vin", "NJ_registration_and_plates_issued"]},
+    {"id": "seller_plate", "allowed": false, "reason": "NJ plates remain with the seller and do not transfer to the buyer."}
+  ]
+}

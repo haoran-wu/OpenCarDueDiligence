@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "OpenCarDueDiligence",
+  "short_name": "OpenCarDD",
+  "version": "0.1.0",
+  "description": "Preview and explicitly import the current used-car listing. Never scrapes in the background or sends messages.",
+  "permissions": ["activeTab", "scripting", "storage"],
+  "optional_host_permissions": ["http://*/*", "https://*/*"],
+  "action": {
+    "default_title": "OpenCarDueDiligence",
+    "default_popup": "popup.html"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}

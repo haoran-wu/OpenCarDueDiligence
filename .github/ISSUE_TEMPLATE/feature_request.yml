@@ -1,0 +1,62 @@
+name: Feature request
+description: Propose an evidence-first product or developer improvement
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please describe the buyer/developer problem before prescribing an implementation. Features must preserve unknowns, provenance, privacy, and explicit user control.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Who has the problem, at which workflow stage, and what is hard today?
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: Describe observable behavior, including what must remain unknown or require confirmation.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Case and evidence ledger
+        - Listing import and comparison
+        - History document processing
+        - Inspection and PPI
+        - OBD and diagnostics
+        - Valuation and repair cost
+        - Negotiation
+        - Title and transaction planning
+        - Web or extension UX
+        - Privacy, security, or deployment
+        - Plugin SDK or provider
+        - Documentation
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sources or examples
+      description: Use public/redistributable sources and synthetic examples only. Do not paste proprietary data.
+  - type: textarea
+    id: boundaries
+    attributes:
+      label: Trust, privacy, and licensing effects
+      description: Could this change a STOP, legal-drive-away, safety, value, retention, or automatic-action boundary?
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues and the v1 readiness document.
+          required: true
+        - label: This proposal does not require posting personal, paid, or non-redistributable material.
+          required: true

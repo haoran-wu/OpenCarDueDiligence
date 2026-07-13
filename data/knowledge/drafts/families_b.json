@@ -1,0 +1,591 @@
+{
+  "schema_version": "1.0",
+  "manifest_version": "2026.07.13-draft-b",
+  "license": "CC-BY-SA-4.0",
+  "status": "research_draft_only_not_for_runtime_publication",
+  "warning": "DRAFT research pack. It has not been human reviewed, is not a reliability verdict, and must never be used to infer VIN-level recall applicability or completion.",
+  "governance": {
+    "research_scope": "Official-source safety signals for ten US-market model families; one narrowly bounded signal per family.",
+    "human_review_required": true,
+    "publication_blockers": [
+      "Verify every applicability token against an OEM configuration source and VIN/build data.",
+      "Verify current VIN-level campaign inclusion and remedy completion through NHTSA and the manufacturer.",
+      "Review bilingual wording, source-use basis, and the absence of unsupported prevalence or cost claims."
+    ],
+    "cost_policy": "All draft planning costs and confidence values remain null/UNKNOWN."
+  },
+  "placeholder_template": {},
+  "families": [
+    {
+      "id": "toyota-prius",
+      "make": "Toyota",
+      "model": "Prius",
+      "vehicle_classes": ["passenger_car", "hybrid"],
+      "generation_packs": [],
+      "powertrain_packs": [],
+      "applicability_packs": [
+        {
+          "id": "draft-b-toyota-prius-xw30-18v684",
+          "publication_status": "DRAFT",
+          "applicability": {
+            "market": "US",
+            "model_year_start": 2010,
+            "model_year_end": 2014,
+            "generations": ["third generation XW30"],
+            "platforms": ["ZVW30"],
+            "engines": ["1.8L gasoline-electric hybrid I4"],
+            "transmissions": ["power-split electronic continuously variable transaxle"],
+            "drivetrains": ["FWD"],
+            "production_date_start": "2009-03-31",
+            "production_date_end": "2014-02-04"
+          },
+          "claims": [
+            {
+              "id": "toyota-prius-18v684-hybrid-shutdown",
+              "label": {"en": "NHTSA 18V-684 hybrid-control software signal", "zh": "NHTSA 18V-684 混动控制软件信号"},
+              "summary": {"en": "Toyota reported that thermal stress could damage inverter IPM transistors and, in limited conditions, the hybrid system could shut down instead of entering fail-safe mode.", "zh": "丰田报告称，热应力可能损坏逆变器 IPM 晶体管；在少数特定条件下，混动系统可能直接关闭，而不是进入跛行保护模式。"},
+              "symptoms": [
+                {"en": "Various warning lamps or a warning message may appear; motive power can be lost under the reported failure path.", "zh": "可能出现多个警告灯或警告信息；按官方描述的故障路径，车辆可能失去驱动力。"}
+              ],
+              "associated_dtcs": [],
+              "stranding_or_safety_risk": {"en": "The official report identifies possible loss of motive power at higher speed and increased crash risk; steering and braking remain operational in the described shutdown.", "zh": "官方报告指出高速行驶时可能失去驱动力并增加碰撞风险；在所述关闭情形下，转向和制动仍可工作。"},
+              "basic_obd_visibility": {"en": "A generic scanner may capture an MIL or some powertrain codes after a fault, but it cannot reliably interrogate every Toyota hybrid module or prove campaign J0V completion. No codes do not clear this signal.", "zh": "普通 OBD 可能在故障后读到 MIL 或部分动力系统代码，但不能可靠读取所有丰田混动模块，也不能证明 J0V 已完成；无报码不能排除此风险。"},
+              "confirmation_tests": [
+                {"en": "Check the exact VIN in NHTSA and Toyota recall systems and obtain dealer completion history; do not infer completion from model year.", "zh": "在 NHTSA 和丰田召回系统中核对准确 VIN，并取得经销商完成记录；不能仅凭年款推断已完成。"},
+                {"en": "Use a Toyota-capable scan tool to scan all hybrid ECUs and road-test only after confirming no active hybrid warnings; inspect inverter-related service history.", "zh": "使用可读取丰田混动全模块的诊断仪扫描，并在确认无活动混动警告后再试驾；同时检查逆变器相关维修记录。"}
+              ],
+              "repair_scenarios": [
+                {"level": "minimum", "description": {"en": "VIN is outside the affected population or official records prove the recall complete; preserve the VIN-level evidence.", "zh": "VIN 不在受影响范围，或官方记录证明召回已完成；保存 VIN 级证据。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"},
+                {"level": "most_likely", "description": {"en": "Open recall with no diagnosed inverter damage: authorized Toyota dealer performs the required hybrid-control software updates.", "zh": "召回未完成且未诊断出逆变器损坏：由丰田授权经销商完成所需混动控制软件更新。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"},
+                {"level": "worst_reasonable", "description": {"en": "Warning or shutdown history is present: stop the purchase/drive plan until dealer diagnosis determines whether inverter repair or replacement is required in addition to recall work.", "zh": "已有警告或系统关闭历史：暂停购买或驾驶计划，待经销商诊断是否除召回外还需维修或更换逆变器。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"}
+              ],
+              "evidence_grade": "A",
+              "source_ids": ["nhtsa-18v684-part573"],
+              "reviewed_at": "2026-07-13"
+            }
+          ],
+          "sources": [
+            {"id": "nhtsa-18v684-part573", "title": "Part 573 Safety Recall Report 18V-684", "publisher": "NHTSA / Toyota Motor Engineering & Manufacturing", "url_or_document_id": "https://static.nhtsa.gov/odi/rcl/2018/RCLRPT-18V684-1808.PDF", "source_type": "NHTSA-hosted Part 573 safety recall report", "license_or_use_basis": "Official public safety filing; link and factual campaign metadata only; source PDF is not redistributed.", "retrieved_at": "2026-07-13", "supports_claim_ids": ["toyota-prius-18v684-hybrid-shutdown"]}
+          ],
+          "reviewed_at": null,
+          "reviewer": null
+        }
+      ],
+      "publication_status": "DRAFT"
+    },
+    {
+      "id": "honda-civic",
+      "make": "Honda",
+      "model": "Civic",
+      "vehicle_classes": ["passenger_car"],
+      "generation_packs": [],
+      "powertrain_packs": [],
+      "applicability_packs": [
+        {
+          "id": "draft-b-honda-civic-fc2-16v725",
+          "publication_status": "DRAFT",
+          "applicability": {
+            "market": "US",
+            "model_year_start": 2016,
+            "model_year_end": 2016,
+            "generations": ["tenth generation"],
+            "platforms": ["FC2 4-door"],
+            "engines": ["2.0L gasoline I4"],
+            "transmissions": ["continuously variable transmission"],
+            "drivetrains": ["FWD"],
+            "production_date_start": "2015-03-17",
+            "production_date_end": "2016-10-03"
+          },
+          "claims": [
+            {
+              "id": "honda-civic-16v725-epb-software",
+              "label": {"en": "NHTSA 16V-725 electric parking-brake signal", "zh": "NHTSA 16V-725 电子驻车制动信号"},
+              "summary": {"en": "Honda reported VSA ECU software that could prevent the electric parking brake from applying when commanded immediately after ignition-off.", "zh": "本田报告称，VSA ECU 软件可能导致车辆熄火后立即操作电子驻车制动时无法施加驻车制动。"},
+              "symptoms": [
+                {"en": "The BRAKE indicator may blink for about 15 seconds when the EPB cannot apply.", "zh": "电子驻车制动无法施加时，BRAKE 指示灯可能闪烁约 15 秒。"}
+              ],
+              "associated_dtcs": [],
+              "stranding_or_safety_risk": {"en": "An inoperative EPB can permit vehicle rollaway and increase crash risk.", "zh": "电子驻车制动失效可能导致车辆溜车并增加碰撞风险。"},
+              "basic_obd_visibility": {"en": "Generic emissions OBD normally does not read the VSA/EPB chassis controller and cannot prove recall completion. A clean generic scan is not a valid EPB check.", "zh": "普通排放 OBD 通常不能读取 VSA/EPB 底盘控制器，也不能证明召回已完成；普通扫描无报码不能作为 EPB 正常的证据。"},
+              "confirmation_tests": [
+                {"en": "Verify the VIN in NHTSA/Honda recall records and obtain proof that VSA ECU reprogramming was completed.", "zh": "在 NHTSA/本田召回记录中核对 VIN，并取得 VSA ECU 已重编程的证明。"},
+                {"en": "With the area clear and wheels controlled, perform the owner-manual EPB apply/release checks and scan the VSA/EPB module with Honda-capable equipment.", "zh": "在确保周围安全并控制车轮的前提下，按车主手册测试 EPB 施加/释放，并用本田专用级设备扫描 VSA/EPB 模块。"}
+              ],
+              "repair_scenarios": [
+                {"level": "minimum", "description": {"en": "VIN is not included or official completion is documented; retain the record and verify normal EPB operation.", "zh": "VIN 不在范围内或有官方完成记录；保留记录并确认 EPB 正常工作。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"},
+                {"level": "most_likely", "description": {"en": "Open recall without other EPB faults: Honda dealer reprograms the VSA ECU under the campaign.", "zh": "召回未完成且无其他 EPB 故障：由本田经销商按召回重编程 VSA ECU。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"},
+                {"level": "worst_reasonable", "description": {"en": "EPB warning or rollaway behavior persists after software status is resolved: stop relying on the brake and obtain full VSA/EPB diagnosis before purchase.", "zh": "处理软件状态后仍有 EPB 警告或溜车表现：不要继续依赖该驻车制动，购买前完成 VSA/EPB 全面诊断。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"}
+              ],
+              "evidence_grade": "A",
+              "source_ids": ["nhtsa-16v725-part573"],
+              "reviewed_at": "2026-07-13"
+            }
+          ],
+          "sources": [
+            {"id": "nhtsa-16v725-part573", "title": "Part 573 Safety Recall Report 16V-725", "publisher": "NHTSA / American Honda Motor Co.", "url_or_document_id": "https://static.nhtsa.gov/odi/rcl/2016/RCLRPT-16V725-8766.PDF", "source_type": "NHTSA-hosted Part 573 safety recall report", "license_or_use_basis": "Official public safety filing; link and factual campaign metadata only; source PDF is not redistributed.", "retrieved_at": "2026-07-13", "supports_claim_ids": ["honda-civic-16v725-epb-software"]}
+          ],
+          "reviewed_at": null,
+          "reviewer": null
+        }
+      ],
+      "publication_status": "DRAFT"
+    },
+    {
+      "id": "honda-accord",
+      "make": "Honda",
+      "model": "Accord",
+      "vehicle_classes": ["passenger_car"],
+      "generation_packs": [],
+      "powertrain_packs": [],
+      "applicability_packs": [
+        {
+          "id": "draft-b-honda-accord-cv1-20v314",
+          "publication_status": "DRAFT",
+          "applicability": {
+            "market": "US",
+            "model_year_start": 2019,
+            "model_year_end": 2019,
+            "generations": ["tenth generation"],
+            "platforms": ["CV1 4-door"],
+            "engines": ["1.5L turbocharged direct-injection gasoline I4"],
+            "transmissions": ["continuously variable transmission"],
+            "drivetrains": ["FWD"],
+            "production_date_start": "2018-10-27",
+            "production_date_end": "2019-02-08"
+          },
+          "claims": [
+            {
+              "id": "honda-accord-20v314-fuel-pump",
+              "label": {"en": "NHTSA 20V-314 low-pressure fuel-pump signal", "zh": "NHTSA 20V-314 低压燃油泵信号"},
+              "summary": {"en": "Honda reported that certain low-density fuel-pump impellers could deform, interfere with the pump body, and make the fuel pump inoperative.", "zh": "本田报告称，部分低密度燃油泵叶轮可能变形并与泵体干涉，最终使燃油泵停止工作。"},
+              "symptoms": [
+                {"en": "The MIL may illuminate; the engine may fail to start or may stall while driving.", "zh": "MIL 可能点亮；发动机可能无法启动，或在行驶中熄火。"}
+              ],
+              "associated_dtcs": [],
+              "stranding_or_safety_risk": {"en": "Fuel-pump failure can cause a no-start or an engine stall while driving, creating stranding and crash risk.", "zh": "燃油泵失效可能导致无法启动或行驶中熄火，存在抛锚和碰撞风险。"},
+              "basic_obd_visibility": {"en": "A generic scanner may see an MIL or secondary powertrain code after failure, but the official report does not identify a required DTC and OBD cannot prove pump condition or recall completion.", "zh": "普通扫描器可能在故障后读到 MIL 或次生动力代码，但官方报告未指定必然报码；OBD 不能证明燃油泵状态或召回完成情况。"},
+              "confirmation_tests": [
+                {"en": "Check the VIN in NHTSA/Honda recall systems and request the dealer campaign-completion record.", "zh": "在 NHTSA/本田召回系统核对 VIN，并索要经销商召回完成记录。"},
+                {"en": "If there is hard-start, stall, or low-fuel-pressure history, measure fuel pressure and current draw using the service procedure before purchase.", "zh": "如有启动困难、熄火或低燃油压力历史，购买前按维修程序测量燃油压力和泵电流。"}
+              ],
+              "repair_scenarios": [
+                {"level": "minimum", "description": {"en": "VIN is outside the affected set or official records prove completion; document the result and continue normal inspection.", "zh": "VIN 不在受影响范围或官方记录证明已完成；记录结果并继续常规检查。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"},
+                {"level": "most_likely", "description": {"en": "Open recall without other damage: Honda dealer replaces the fuel-pump assembly under the campaign.", "zh": "召回未完成且无其他损坏：由本田经销商按召回更换燃油泵总成。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"},
+                {"level": "worst_reasonable", "description": {"en": "The vehicle has stalled or will not start: do not road-test; tow for fuel-system diagnosis and recall remedy, then confirm no secondary fault remains.", "zh": "车辆曾熄火或无法启动：不要试驾；拖车进行燃油系统诊断和召回维修，并确认无次生故障。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"}
+              ],
+              "evidence_grade": "A",
+              "source_ids": ["nhtsa-20v314-part573"],
+              "reviewed_at": "2026-07-13"
+            }
+          ],
+          "sources": [
+            {"id": "nhtsa-20v314-part573", "title": "Part 573 Safety Recall Report 20V-314", "publisher": "NHTSA / American Honda Motor Co.", "url_or_document_id": "https://static.nhtsa.gov/odi/rcl/2020/RCLRPT-20V314-2564.PDF", "source_type": "NHTSA-hosted Part 573 safety recall report", "license_or_use_basis": "Official public safety filing; link and factual campaign metadata only; source PDF is not redistributed.", "retrieved_at": "2026-07-13", "supports_claim_ids": ["honda-accord-20v314-fuel-pump"]}
+          ],
+          "reviewed_at": null,
+          "reviewer": null
+        }
+      ],
+      "publication_status": "DRAFT"
+    },
+    {
+      "id": "honda-crv",
+      "make": "Honda",
+      "model": "CR-V",
+      "vehicle_classes": ["SUV"],
+      "generation_packs": [],
+      "powertrain_packs": [],
+      "applicability_packs": [
+        {
+          "id": "draft-b-honda-crv-re3-re4-23v228",
+          "publication_status": "DRAFT",
+          "applicability": {
+            "market": "US",
+            "model_year_start": 2007,
+            "model_year_end": 2011,
+            "generations": ["third generation"],
+            "platforms": ["RE3", "RE4"],
+            "engines": ["2.4L gasoline I4"],
+            "transmissions": ["5-speed automatic"],
+            "drivetrains": ["FWD", "4WD"],
+            "production_date_start": "2006-03-06",
+            "production_date_end": "2011-12-05"
+          },
+          "claims": [
+            {
+              "id": "honda-crv-23v228-rear-frame-corrosion",
+              "label": {"en": "NHTSA 23V-228 salt-belt rear-frame corrosion signal", "zh": "NHTSA 23V-228 盐带地区后车架腐蚀信号"},
+              "summary": {"en": "Honda reported that road salt, mud, and water can corrode the rear frame internally in specified salt-belt states, allowing the rear trailing arm to detach.", "zh": "本田报告称，在指定盐带州，道路盐、泥水可能使后车架内部腐蚀，进而导致后拖曳臂脱离。"},
+              "symptoms": [
+                {"en": "The Part 573 report identifies no required driver warning; frame corrosion must be treated as a physical-inspection issue.", "zh": "Part 573 报告未给出必然驾驶员预警；车架腐蚀必须通过实物检查确认。"}
+              ],
+              "associated_dtcs": [],
+              "stranding_or_safety_risk": {"en": "Rear trailing-arm detachment can cause loss of control, crash, or injury. This is a safety gate, not a cosmetic rust deduction.", "zh": "后拖曳臂脱离可能导致失控、碰撞或受伤；这是安全闸门，不是普通外观锈蚀压价项。"},
+              "basic_obd_visibility": {"en": "Generic OBD cannot detect internal rear-frame corrosion, trailing-arm attachment strength, recall inclusion, or repair completion.", "zh": "普通 OBD 无法检测后车架内部腐蚀、拖曳臂连接强度、召回范围或维修完成情况。"},
+              "confirmation_tests": [
+                {"en": "Verify VIN recall status and whether the vehicle was ever sold or registered in a listed salt-belt jurisdiction.", "zh": "核对 VIN 召回状态，并确认车辆是否曾在官方列出的盐带地区销售或登记。"},
+                {"en": "Require Honda recall inspection records or have an authorized dealer inspect the rear frame and trailing-arm bolt area before any road purchase decision.", "zh": "要求提供本田召回检查记录，或在决定上路购买前由授权经销商检查后车架与拖曳臂螺栓区域。"}
+              ],
+              "repair_scenarios": [
+                {"level": "minimum", "description": {"en": "VIN is not affected or dealer documentation shows the recall inspection/remedy complete with acceptable frame condition.", "zh": "VIN 不受影响，或经销商文件证明召回检查/维修完成且车架状况可接受。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"},
+                {"level": "most_likely", "description": {"en": "Open recall and removable trailing-arm bolt: dealer follows the campaign inspection and support-brace path.", "zh": "召回未完成且拖曳臂螺栓可拆：经销商按召回执行检查和加装支撑支架。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"},
+                {"level": "worst_reasonable", "description": {"en": "Severe corrosion or non-removable bolt: do not drive; Honda determines frame repair versus repurchase under the campaign.", "zh": "严重腐蚀或螺栓无法拆除：不要驾驶；由本田按召回决定修复车架或回购。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"}
+              ],
+              "evidence_grade": "A",
+              "source_ids": ["nhtsa-23v228-part573"],
+              "reviewed_at": "2026-07-13"
+            }
+          ],
+          "sources": [
+            {"id": "nhtsa-23v228-part573", "title": "Part 573 Safety Recall Report 23V-228", "publisher": "NHTSA / American Honda Motor Co.", "url_or_document_id": "https://static.nhtsa.gov/odi/rcl/2023/RCLRPT-23V228-3230.PDF", "source_type": "NHTSA-hosted Part 573 safety recall report", "license_or_use_basis": "Official public safety filing; link and factual campaign metadata only; source PDF is not redistributed.", "retrieved_at": "2026-07-13", "supports_claim_ids": ["honda-crv-23v228-rear-frame-corrosion"]}
+          ],
+          "reviewed_at": null,
+          "reviewer": null
+        }
+      ],
+      "publication_status": "DRAFT"
+    },
+    {
+      "id": "nissan-rogue",
+      "make": "Nissan",
+      "model": "Rogue",
+      "vehicle_classes": ["SUV"],
+      "generation_packs": [],
+      "powertrain_packs": [],
+      "applicability_packs": [
+        {
+          "id": "draft-b-nissan-rogue-t32-22v024",
+          "publication_status": "DRAFT",
+          "applicability": {
+            "market": "US",
+            "model_year_start": 2014,
+            "model_year_end": 2016,
+            "generations": ["second generation"],
+            "platforms": ["T32"],
+            "engines": ["2.5L gasoline I4"],
+            "transmissions": ["Xtronic continuously variable transmission"],
+            "drivetrains": ["FWD", "AWD"],
+            "production_date_start": "2013-07-25",
+            "production_date_end": "2016-12-31"
+          },
+          "claims": [
+            {
+              "id": "nissan-rogue-22v024-dash-harness-corrosion",
+              "label": {"en": "NHTSA 22V-024 dash-harness corrosion signal", "zh": "NHTSA 22V-024 仪表台线束腐蚀信号"},
+              "summary": {"en": "Nissan reported that water and salt in the driver footwell can wick through harness tape into a dash-side connector and cause corrosion or thermal damage.", "zh": "日产报告称，驾驶员脚坑内的水和盐可能沿线束胶带进入仪表台侧连接器，引起腐蚀或热损伤。"},
+              "symptoms": [
+                {"en": "Power window or seat failure, AWD warning, battery discharge, burning odor, or smoke under the driver-side dash may occur.", "zh": "可能出现电动车窗或座椅失效、AWD 警告、电瓶亏电、焦味，或驾驶员侧仪表台下冒烟。"}
+              ],
+              "associated_dtcs": [],
+              "stranding_or_safety_risk": {"en": "The condition can discharge the battery and, in the worst reported case, cause a fire.", "zh": "该问题可能造成电瓶耗尽；按官方最坏情形，可能引发火灾。"},
+              "basic_obd_visibility": {"en": "Generic OBD cannot inspect connector corrosion or body-harness heat damage. It may also miss body/AWD module faults; no generic code does not clear the fire signal.", "zh": "普通 OBD 无法检查连接器腐蚀或车身线束热损伤，也可能漏掉车身/AWD 模块故障；无普通报码不能排除火灾风险。"},
+              "confirmation_tests": [
+                {"en": "Verify VIN inclusion and campaign R21B9 completion through NHTSA/Nissan records.", "zh": "通过 NHTSA/日产记录核对 VIN 是否纳入以及 R21B9 是否完成。"},
+                {"en": "Inspect the driver footwell for moisture and have the specified dash-side connectors examined for corrosion or heat damage; do not disturb a hot or smoking connector.", "zh": "检查驾驶员脚坑是否潮湿，并由专业人员检查指定连接器有无腐蚀或热损伤；如连接器发热或冒烟，不要自行触碰。"}
+              ],
+              "repair_scenarios": [
+                {"level": "minimum", "description": {"en": "VIN is not affected or campaign completion is documented; separately confirm the footwell is dry and the connector has no damage.", "zh": "VIN 不受影响或有召回完成记录；仍需单独确认脚坑干燥且连接器无损伤。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"},
+                {"level": "most_likely", "description": {"en": "Open recall without corrosion: dealer removes specified tape/covering and applies the campaign grease treatment.", "zh": "召回未完成且无腐蚀：经销商按召回移除指定胶带/包覆并涂抹规定润滑脂。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"},
+                {"level": "worst_reasonable", "description": {"en": "Corrosion, heat, odor, or smoke is present: disconnect/use only per safety instructions, do not drive, and have Nissan replace connectors and assess harness/fire damage.", "zh": "存在腐蚀、发热、焦味或烟：仅按安全说明处理，禁止驾驶，由日产更换连接器并评估线束和火灾损伤。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"}
+              ],
+              "evidence_grade": "A",
+              "source_ids": ["nhtsa-22v024-part573"],
+              "reviewed_at": "2026-07-13"
+            }
+          ],
+          "sources": [
+            {"id": "nhtsa-22v024-part573", "title": "Part 573 Safety Recall Report 22V-024", "publisher": "NHTSA / Nissan North America, Inc.", "url_or_document_id": "https://static.nhtsa.gov/odi/rcl/2022/RCLRPT-22V024-3229.PDF", "source_type": "NHTSA-hosted Part 573 safety recall report", "license_or_use_basis": "Official public safety filing; link and factual campaign metadata only; source PDF is not redistributed.", "retrieved_at": "2026-07-13", "supports_claim_ids": ["nissan-rogue-22v024-dash-harness-corrosion"]}
+          ],
+          "reviewed_at": null,
+          "reviewer": null
+        }
+      ],
+      "publication_status": "DRAFT"
+    },
+    {
+      "id": "nissan-altima",
+      "make": "Nissan",
+      "model": "Altima",
+      "vehicle_classes": ["passenger_car"],
+      "generation_packs": [],
+      "powertrain_packs": [],
+      "applicability_packs": [
+        {
+          "id": "draft-b-nissan-altima-l33-20v315",
+          "publication_status": "DRAFT",
+          "applicability": {
+            "market": "US",
+            "model_year_start": 2013,
+            "model_year_end": 2018,
+            "generations": ["fifth generation"],
+            "platforms": ["L33"],
+            "engines": ["2.5L gasoline I4"],
+            "transmissions": ["Xtronic continuously variable transmission"],
+            "drivetrains": ["FWD"],
+            "production_date_start": "2012-03-06",
+            "production_date_end": "2018-08-17"
+          },
+          "claims": [
+            {
+              "id": "nissan-altima-20v315-secondary-hood-latch",
+              "label": {"en": "NHTSA 20V-315 secondary hood-latch signal", "zh": "NHTSA 20V-315 机盖二级锁信号"},
+              "summary": {"en": "Nissan reported that contamination and inadequate maintenance can bind the secondary hood latch in the open position after it is disengaged.", "zh": "日产报告称，污染物积聚及维护不足可能使机盖二级锁在释放后卡在开启位置。"},
+              "symptoms": [
+                {"en": "The hood may flutter or make noise before opening; some Intelligent Key vehicles may show a remote-start error when the hood is open.", "zh": "机盖可能在弹开前抖动或发出异响；部分智能钥匙车型在机盖开启时可能出现远程启动错误。"}
+              ],
+              "associated_dtcs": [],
+              "stranding_or_safety_risk": {"en": "If the primary latch is released and the secondary latch does not hold, the hood may open in motion and block forward vision, increasing crash risk.", "zh": "若主锁释放且二级锁未能保持，机盖可能在行驶中弹开并遮挡前方视线，增加碰撞风险。"},
+              "basic_obd_visibility": {"en": "This is principally a mechanical latch and maintenance condition. Generic OBD cannot inspect latch binding or prove recall completion.", "zh": "这主要是机械锁扣和维护状态问题；普通 OBD 无法检查锁扣卡滞，也不能证明召回完成。"},
+              "confirmation_tests": [
+                {"en": "Verify VIN inclusion and R20A7 completion in NHTSA/Nissan records, including vehicles previously repaired under earlier hood-latch recalls.", "zh": "在 NHTSA/日产记录中核对 VIN 与 R20A7 完成情况，包括曾按早期机盖锁召回维修的车辆。"},
+                {"en": "With the vehicle stationary, inspect primary/secondary latch engagement, contamination, spring action, and maintenance condition using the Nissan procedure.", "zh": "车辆静止时，按日产程序检查主锁/二级锁啮合、污染、弹簧动作和维护状态。"}
+              ],
+              "repair_scenarios": [
+                {"level": "minimum", "description": {"en": "VIN is not affected or the latest campaign remedy is documented; verify clean, positive latch operation.", "zh": "VIN 不受影响或有最新召回完成记录；确认锁扣清洁并可靠啮合。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"},
+                {"level": "most_likely", "description": {"en": "Open recall with serviceable latch: Nissan performs the campaign remedy and required latch-maintenance instructions.", "zh": "召回未完成且锁扣可维修：由日产执行召回维修及规定的锁扣维护措施。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"},
+                {"level": "worst_reasonable", "description": {"en": "The hood flutters, will not latch securely, or has opened: do not drive; tow for latch/hood alignment diagnosis and complete the recall before road use.", "zh": "机盖抖动、无法可靠锁住或曾弹开：不要驾驶；拖车检查锁扣/机盖对位，并在上路前完成召回。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"}
+              ],
+              "evidence_grade": "A",
+              "source_ids": ["nhtsa-20v315-part573"],
+              "reviewed_at": "2026-07-13"
+            }
+          ],
+          "sources": [
+            {"id": "nhtsa-20v315-part573", "title": "Part 573 Safety Recall Report 20V-315", "publisher": "NHTSA / Nissan North America, Inc.", "url_or_document_id": "https://static.nhtsa.gov/odi/rcl/2020/RCLRPT-20V315-1575.PDF", "source_type": "NHTSA-hosted Part 573 safety recall report", "license_or_use_basis": "Official public safety filing; link and factual campaign metadata only; source PDF is not redistributed.", "retrieved_at": "2026-07-13", "supports_claim_ids": ["nissan-altima-20v315-secondary-hood-latch"]}
+          ],
+          "reviewed_at": null,
+          "reviewer": null
+        }
+      ],
+      "publication_status": "DRAFT"
+    },
+    {
+      "id": "jeep-grand-cherokee",
+      "make": "Jeep",
+      "model": "Grand Cherokee",
+      "vehicle_classes": ["SUV", "diesel"],
+      "generation_packs": [],
+      "powertrain_packs": [],
+      "applicability_packs": [
+        {
+          "id": "draft-b-jeep-grand-cherokee-wk2-23v411",
+          "publication_status": "DRAFT",
+          "applicability": {
+            "market": "US",
+            "model_year_start": 2014,
+            "model_year_end": 2020,
+            "generations": ["fourth generation"],
+            "platforms": ["WK2"],
+            "engines": ["3.0L EcoDiesel V6"],
+            "transmissions": ["8-speed automatic"],
+            "drivetrains": ["4WD"],
+            "production_date_start": "2012-12-19",
+            "production_date_end": "2019-10-13"
+          },
+          "claims": [
+            {
+              "id": "jeep-grand-cherokee-23v411-tone-wheel",
+              "label": {"en": "NHTSA 23V-411 crankshaft tone-wheel signal", "zh": "NHTSA 23V-411 曲轴信号轮信号"},
+              "summary": {"en": "FCA reported that magnetic material can delaminate from the crankshaft tone wheel, eliminating the position signal needed to synchronize injection and cam timing.", "zh": "FCA 报告称，曲轴信号轮的磁性材料可能剥离，使发动机失去同步喷油和凸轮正时所需的位置信号。"},
+              "symptoms": [
+                {"en": "The official report identifies possible engine stall and inability to restart, with no required advance warning.", "zh": "官方报告指出可能发生发动机熄火且无法重新启动，并且不一定有事先警告。"}
+              ],
+              "associated_dtcs": [],
+              "stranding_or_safety_risk": {"en": "Loss of motive power without warning can strand the vehicle and increase crash risk.", "zh": "无预警失去驱动力可能导致抛锚并增加碰撞风险。"},
+              "basic_obd_visibility": {"en": "A generic scan cannot inspect magnetic delamination or prove campaign 66A/73A completion. Depending on software state, a code or MIL may occur only after signal loss; no code does not rule it out.", "zh": "普通 OBD 无法检查磁性材料剥离，也不能证明 66A/73A 已完成；视软件状态而定，可能在信号丢失后才报码或亮 MIL，无报码不能排除。"},
+              "confirmation_tests": [
+                {"en": "Verify exact VIN inclusion and whether FCA campaign 66A or 73A was completed, including the vehicle's emissions-modification context.", "zh": "核对准确 VIN 是否纳入，以及 FCA 66A 或 73A 是否完成，并确认该车的排放改装背景。"},
+                {"en": "If stall/no-restart history exists, do not rely on a generic scan; obtain FCA-capable PCM data and crank-signal/tone-wheel diagnosis before purchase.", "zh": "如有熄火/无法重启历史，不要只依赖普通扫描；购买前取得 FCA 专用级 PCM 数据并诊断曲轴信号/信号轮。"}
+              ],
+              "repair_scenarios": [
+                {"level": "minimum", "description": {"en": "VIN is outside the affected set or official records prove the applicable campaign complete; retain evidence.", "zh": "VIN 不在受影响范围，或官方记录证明适用召回已完成；保存证据。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"},
+                {"level": "most_likely", "description": {"en": "Open campaign without failure history: FCA applies the campaign-specific PCM update or tone-wheel path after VIN determination.", "zh": "召回未完成且无故障历史：FCA 按 VIN 判定执行对应 PCM 更新或信号轮处理。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"},
+                {"level": "worst_reasonable", "description": {"en": "Stall/no-restart or crank-signal loss is present: tow the vehicle; complete FCA diagnosis and any required tone-wheel repair before road use.", "zh": "存在熄火/无法重启或曲轴信号丢失：拖车处理；上路前完成 FCA 诊断及所需信号轮维修。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"}
+              ],
+              "evidence_grade": "A",
+              "source_ids": ["nhtsa-23v411-part573"],
+              "reviewed_at": "2026-07-13"
+            }
+          ],
+          "sources": [
+            {"id": "nhtsa-23v411-part573", "title": "Part 573 Safety Recall Report 23V-411", "publisher": "NHTSA / FCA US LLC", "url_or_document_id": "https://static.nhtsa.gov/odi/rcl/2023/RCLRPT-23V411-5922.PDF", "source_type": "NHTSA-hosted Part 573 safety recall report", "license_or_use_basis": "Official public safety filing; link and factual campaign metadata only; source PDF is not redistributed.", "retrieved_at": "2026-07-13", "supports_claim_ids": ["jeep-grand-cherokee-23v411-tone-wheel"]}
+          ],
+          "reviewed_at": null,
+          "reviewer": null
+        }
+      ],
+      "publication_status": "DRAFT"
+    },
+    {
+      "id": "jeep-wrangler",
+      "make": "Jeep",
+      "model": "Wrangler",
+      "vehicle_classes": ["SUV"],
+      "generation_packs": [],
+      "powertrain_packs": [],
+      "applicability_packs": [
+        {
+          "id": "draft-b-jeep-wrangler-jl-23v116",
+          "publication_status": "DRAFT",
+          "applicability": {
+            "market": "US",
+            "model_year_start": 2018,
+            "model_year_end": 2023,
+            "generations": ["fourth generation"],
+            "platforms": ["JL"],
+            "engines": ["3.6L gasoline V6 manual-transmission configuration"],
+            "transmissions": ["6-speed manual"],
+            "drivetrains": ["4WD"],
+            "production_date_start": "2017-08-23",
+            "production_date_end": "2023-02-16"
+          },
+          "claims": [
+            {
+              "id": "jeep-wrangler-23v116-clutch-pressure-plate",
+              "label": {"en": "NHTSA 23V-116 manual-clutch pressure-plate signal", "zh": "NHTSA 23V-116 手动挡离合器压盘信号"},
+              "summary": {"en": "FCA reported that extreme clutch pressure-plate overheating can cause rapid fracture, holes or cracks in the transmission case, and expulsion of heated debris.", "zh": "FCA 报告称，离合器压盘极度过热可能导致快速破裂，使变速箱壳体出现裂缝或孔洞，并喷出高温碎片。"},
+              "symptoms": [
+                {"en": "Clutch odor, clutch slip, or cluster messaging may precede failure in some circumstances.", "zh": "在部分情形下，故障前可能出现离合器焦味、打滑或仪表提示。"}
+              ],
+              "associated_dtcs": [],
+              "stranding_or_safety_risk": {"en": "Heated debris can contact an ignition source and cause a fire, risking injury to occupants or bystanders.", "zh": "高温碎片可能接触点火源并引发火灾，危及乘员和周围人员。"},
+              "basic_obd_visibility": {"en": "Generic OBD cannot inspect clutch pressure-plate temperature history, fracture, transmission-case damage, or recall completion. Clutch slip can exist without a generic powertrain code.", "zh": "普通 OBD 无法检查压盘过热历史、破裂、变速箱壳损伤或召回完成情况；离合器打滑也可能没有普通动力报码。"},
+              "confirmation_tests": [
+                {"en": "Verify the exact VIN in NHTSA and Mopar/FCA recall systems; remedy availability and required work varied by VIN/model year and later revisions.", "zh": "在 NHTSA 与 Mopar/FCA 召回系统核对准确 VIN；不同 VIN/年款的维修可用性和要求曾随修订变化。"},
+                {"en": "Require dealer documentation for clutch replacement and IPC/PCM software work where applicable; inspect clutch operation and bellhousing for heat or damage before purchase.", "zh": "按适用情况要求提供离合器更换及 IPC/PCM 软件处理文件；购买前检查离合器工作和钟形壳有无过热或损伤。"}
+              ],
+              "repair_scenarios": [
+                {"level": "minimum", "description": {"en": "VIN is not affected or current FCA records prove all applicable recall revisions complete; preserve records and verify clutch operation.", "zh": "VIN 不受影响或 FCA 当前记录证明所有适用召回修订均完成；保存记录并确认离合器工作。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"},
+                {"level": "most_likely", "description": {"en": "Open recall without heat symptoms: FCA follows the current VIN-specific campaign procedure, which may include clutch replacement and IPC/PCM reprogramming.", "zh": "召回未完成且无过热症状：FCA 按当前 VIN 专属流程处理，可能包括更换离合器及重编程 IPC/PCM。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"},
+                {"level": "worst_reasonable", "description": {"en": "Odor, slip, smoke, or bellhousing damage is present: stop driving, isolate fire risk, tow, and require full clutch/transmission-case inspection plus current recall remedy.", "zh": "存在焦味、打滑、烟或钟形壳损伤：停止驾驶并隔离火灾风险，拖车完成离合器/变速箱壳全面检查及当前召回维修。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"}
+              ],
+              "evidence_grade": "A",
+              "source_ids": ["nhtsa-23v116-part573", "nhtsa-23v116-recall-instructions"],
+              "reviewed_at": "2026-07-13"
+            }
+          ],
+          "sources": [
+            {"id": "nhtsa-23v116-part573", "title": "Part 573 Safety Recall Report 23V-116", "publisher": "NHTSA / FCA US LLC", "url_or_document_id": "https://static.nhtsa.gov/odi/rcl/2023/RCLRPT-23V116-1538.PDF", "source_type": "NHTSA-hosted Part 573 safety recall report", "license_or_use_basis": "Official public safety filing; link and factual campaign metadata only; source PDF is not redistributed.", "retrieved_at": "2026-07-13", "supports_claim_ids": ["jeep-wrangler-23v116-clutch-pressure-plate"]},
+            {"id": "nhtsa-23v116-recall-instructions", "title": "FCA Safety Recall 19A / NHTSA 23V-116 dealer instructions, revision 3", "publisher": "NHTSA-hosted FCA US LLC document", "url_or_document_id": "https://static.nhtsa.gov/odi/rcl/2023/RCRIT-23V116-7715.pdf", "source_type": "OEM recall repair instructions hosted by NHTSA", "license_or_use_basis": "Link-only citation and limited factual metadata; the source states reproduction restrictions and is not redistributed.", "retrieved_at": "2026-07-13", "supports_claim_ids": ["jeep-wrangler-23v116-clutch-pressure-plate"]}
+          ],
+          "reviewed_at": null,
+          "reviewer": null
+        }
+      ],
+      "publication_status": "DRAFT"
+    },
+    {
+      "id": "subaru-outback",
+      "make": "Subaru",
+      "model": "Outback",
+      "vehicle_classes": ["wagon", "SUV"],
+      "generation_packs": [],
+      "powertrain_packs": [],
+      "applicability_packs": [
+        {
+          "id": "draft-b-subaru-outback-bt-21v955",
+          "publication_status": "DRAFT",
+          "applicability": {
+            "market": "US",
+            "model_year_start": 2020,
+            "model_year_end": 2020,
+            "generations": ["sixth generation"],
+            "platforms": ["BT"],
+            "engines": ["2.5L gasoline flat-four"],
+            "transmissions": ["Lineartronic continuously variable transmission"],
+            "drivetrains": ["AWD"],
+            "production_date_start": "2019-07-15",
+            "production_date_end": "2020-08-13"
+          },
+          "claims": [
+            {
+              "id": "subaru-outback-21v955-tcu-chain-slip",
+              "label": {"en": "NHTSA 21V-955 TCU/drive-chain slip signal", "zh": "NHTSA 21V-955 TCU/传动链打滑信号"},
+              "summary": {"en": "Subaru reported TCU programming that could allow clutch engagement before adequate CVT chain clamping pressure, permitting chain slip, guide damage, or chain breakage.", "zh": "斯巴鲁报告称，TCU 程序可能在 CVT 链条夹紧压力不足时提前接合离合器，导致链条打滑、导轨损坏或链条断裂。"},
+              "symptoms": [
+                {"en": "The Part 573 report identifies no required warning before the described failure path.", "zh": "Part 573 报告指出，所述故障路径不一定有事先警告。"}
+              ],
+              "associated_dtcs": [],
+              "stranding_or_safety_risk": {"en": "A broken drive chain can cause loss of motive power and increase crash and stranding risk.", "zh": "传动链断裂可能导致失去驱动力，增加碰撞与抛锚风险。"},
+              "basic_obd_visibility": {"en": "Generic OBD may not expose Subaru TCU historical chain-slip data or guide condition and cannot prove recall completion. All-ready/no-code status is insufficient.", "zh": "普通 OBD 可能无法读取斯巴鲁 TCU 的历史链条打滑数据或导轨状况，也不能证明召回完成；全 Ready/无报码不足以排除。"},
+              "confirmation_tests": [
+                {"en": "Verify VIN inclusion and WUV-07/21V-955 completion through NHTSA/Subaru records.", "zh": "通过 NHTSA/斯巴鲁记录核对 VIN 是否纳入以及 WUV-07/21V-955 是否完成。"},
+                {"en": "Use Subaru-capable equipment to retrieve historical TCU data and follow the campaign chain-guide inspection; require proof if transmission replacement was indicated.", "zh": "使用斯巴鲁专用级设备读取 TCU 历史数据，并按召回检查链条导轨；如曾判定需更换变速箱，必须索要完成证明。"}
+              ],
+              "repair_scenarios": [
+                {"level": "minimum", "description": {"en": "VIN is unaffected or official records prove TCU campaign work complete with no slip indication or guide damage.", "zh": "VIN 不受影响，或官方记录证明 TCU 召回已完成且无打滑指征/导轨损伤。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"},
+                {"level": "most_likely", "description": {"en": "Open recall without slip evidence: Subaru reprograms the TCU and performs the prescribed data/visual checks.", "zh": "召回未完成且无打滑证据：斯巴鲁重编程 TCU，并执行规定的数据与目视检查。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"},
+                {"level": "worst_reasonable", "description": {"en": "Historical slip or guide damage is confirmed: do not rely on a software-only fix; Subaru replaces the transmission assembly per campaign criteria.", "zh": "确认存在历史打滑或导轨损伤：不能只做软件更新；应按召回标准由斯巴鲁更换变速箱总成。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"}
+              ],
+              "evidence_grade": "A",
+              "source_ids": ["nhtsa-21v955-part573"],
+              "reviewed_at": "2026-07-13"
+            }
+          ],
+          "sources": [
+            {"id": "nhtsa-21v955-part573", "title": "Part 573 Safety Recall Report 21V-955", "publisher": "NHTSA / Subaru of America, Inc.", "url_or_document_id": "https://static.nhtsa.gov/odi/rcl/2021/RCLRPT-21V955-7341.PDF", "source_type": "NHTSA-hosted Part 573 safety recall report", "license_or_use_basis": "Official public safety filing; link and factual campaign metadata only; source PDF is not redistributed.", "retrieved_at": "2026-07-13", "supports_claim_ids": ["subaru-outback-21v955-tcu-chain-slip"]}
+          ],
+          "reviewed_at": null,
+          "reviewer": null
+        }
+      ],
+      "publication_status": "DRAFT"
+    },
+    {
+      "id": "subaru-forester",
+      "make": "Subaru",
+      "model": "Forester",
+      "vehicle_classes": ["SUV"],
+      "generation_packs": [],
+      "powertrain_packs": [],
+      "applicability_packs": [
+        {
+          "id": "draft-b-subaru-forester-sk-19v856",
+          "publication_status": "DRAFT",
+          "applicability": {
+            "market": "US",
+            "model_year_start": 2019,
+            "model_year_end": 2019,
+            "generations": ["fifth generation"],
+            "platforms": ["SK"],
+            "engines": ["2.5L gasoline flat-four"],
+            "transmissions": ["Lineartronic continuously variable transmission"],
+            "drivetrains": ["AWD"],
+            "production_date_start": "2018-07-04",
+            "production_date_end": "2019-03-21"
+          },
+          "claims": [
+            {
+              "id": "subaru-forester-19v856-pcv-separation",
+              "label": {"en": "NHTSA 19V-856 PCV-valve separation signal", "zh": "NHTSA 19V-856 PCV 阀分离信号"},
+              "summary": {"en": "Subaru reported that an aluminum PCV valve can separate, allow oil into the combustion chamber, and potentially allow separated parts to enter the engine.", "zh": "斯巴鲁报告称，铝制 PCV 阀可能分离，使机油进入燃烧室，并可能让分离零件进入发动机。"},
+              "symptoms": [
+                {"en": "A visible change in the appearance or amount of exhaust may occur; continued operation can progress to loss of motive power.", "zh": "尾气外观或排量可能出现明显变化；继续驾驶可能发展为失去驱动力。"}
+              ],
+              "associated_dtcs": [],
+              "stranding_or_safety_risk": {"en": "Continued driving with a separated valve can lead to loss of motive power and increased crash/stranding risk.", "zh": "PCV 阀分离后继续驾驶可能导致失去驱动力，增加碰撞和抛锚风险。"},
+              "basic_obd_visibility": {"en": "A generic scanner may see secondary mixture, misfire, or oil-related symptoms only after damage develops; it cannot inspect PCV separation, locate missing pieces, or prove recall completion.", "zh": "普通 OBD 可能在损伤形成后才看到混合气、失火或烧机油等次生信号；无法检查 PCV 是否分离、零件是否遗失，也不能证明召回完成。"},
+              "confirmation_tests": [
+                {"en": "Verify VIN inclusion and WUM-98/19V-856 completion through NHTSA/Subaru records.", "zh": "通过 NHTSA/斯巴鲁记录核对 VIN 是否纳入以及 WUM-98/19V-856 是否完成。"},
+                {"en": "Require documentation that the PCV valve was replaced and inspected; if separation was found, verify the separator-cover/oil-pan search and any short-block replacement outcome.", "zh": "要求提供 PCV 阀更换与检查记录；如发现分离，需核实是否拆检分离盖/油底壳寻找零件，以及是否更换短机体。"}
+              ],
+              "repair_scenarios": [
+                {"level": "minimum", "description": {"en": "VIN is not affected or official records prove recall completion with an intact removed valve/complete parts accounting.", "zh": "VIN 不受影响，或官方记录证明召回已完成且拆下的阀体完整、零件已核清。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"},
+                {"level": "most_likely", "description": {"en": "Open recall and valve is intact: Subaru replaces the PCV valve and hardware with the updated part.", "zh": "召回未完成且阀体完整：由斯巴鲁更换 PCV 阀及其附件为改进件。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"},
+                {"level": "worst_reasonable", "description": {"en": "Valve is separated and pieces cannot be located: stop driving; Subaru follows the campaign inspection and short-block replacement path.", "zh": "阀体已分离且找不到全部零件：停止驾驶；由斯巴鲁按召回执行检查并走短机体更换路径。"}, "planning_cost_usd": null, "cost_confidence": "UNKNOWN"}
+              ],
+              "evidence_grade": "A",
+              "source_ids": ["nhtsa-19v856-part573"],
+              "reviewed_at": "2026-07-13"
+            }
+          ],
+          "sources": [
+            {"id": "nhtsa-19v856-part573", "title": "Part 573 Safety Recall Report 19V-856", "publisher": "NHTSA / Subaru of America, Inc.", "url_or_document_id": "https://static.nhtsa.gov/odi/rcl/2019/RCLRPT-19V856-4949.PDF", "source_type": "NHTSA-hosted Part 573 safety recall report", "license_or_use_basis": "Official public safety filing; link and factual campaign metadata only; source PDF is not redistributed.", "retrieved_at": "2026-07-13", "supports_claim_ids": ["subaru-forester-19v856-pcv-separation"]}
+          ],
+          "reviewed_at": null,
+          "reviewer": null
+        }
+      ],
+      "publication_status": "DRAFT"
+    }
+  ]
+}

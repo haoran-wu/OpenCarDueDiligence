@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenCarDueDiligence</title>
+  </head>
+  <body>
+    <div class="shell">
+      <header>
+        <div class="brand-mark">OC</div>
+        <div><strong>OpenCar</strong><span>Due Diligence</span></div>
+        <span class="local-pill">User initiated</span>
+      </header>
+
+      <nav class="tabs" aria-label="Extension tools">
+        <button class="tab active" data-tab="listing">Listing import</button>
+        <button class="tab" data-tab="message">Message fill</button>
+        <button class="tab" data-tab="settings">Settings</button>
+      </nav>
+
+      <main>
+        <section id="listing-panel" class="panel active">
+          <div class="step-heading"><span>01</span><div><strong>Extract this page</strong><small>Runs only after you click.</small></div></div>
+          <button id="extract" class="button primary">Extract current listing</button>
+          <p class="guardrail">Only visible vehicle fields are read. Cookies, session tokens, chats, and browsing history are never collected.</p>
+
+          <div id="preview" class="preview hidden">
+            <div class="step-heading"><span>02</span><div><strong>Review the snapshot</strong><small>Edit anything that was parsed incorrectly.</small></div></div>
+            <label>Title<input id="listing-title" maxlength="180" /></label>
+            <div class="pair"><label>Price (USD)<input id="listing-price" type="number" min="0" /></label><label>Mileage<input id="listing-mileage" type="number" min="0" /></label></div>
+            <label>Location<input id="listing-location" maxlength="120" /></label>
+            <div class="pair"><label>Transmission<input id="listing-transmission" maxlength="80" /></label><label>VIN<input id="listing-vin" maxlength="17" /></label></div>
+            <label>Source URL<input id="listing-url" readonly /></label>
+            <div class="source-row"><span id="source-label">General page</span><span id="captured-time"></span></div>
+
+            <div class="step-heading import-step"><span>03</span><div><strong>Confirm import</strong><small>Nothing is uploaded before this step.</small></div></div>
+            <label>Case ID<input id="case-id" placeholder="e.g. 8af2…" autocomplete="off" /></label>
+            <label>Cloud case token (optional)<input id="case-token" type="password" autocomplete="off" placeholder="Required only for anonymous cloud cases" /></label>
+            <label class="confirm"><input id="confirm-import" type="checkbox" />I reviewed this snapshot and want to send only these fields to my configured API.</label>
+            <button id="import" class="button primary" disabled>Confirm & import</button>
+          </div>
+        </section>
+
+        <section id="message-panel" class="panel">
+          <div class="step-heading"><span>01</span><div><strong>Paste an approved draft</strong><small>The extension does not generate or send it.</small></div></div>
+          <label>Negotiation message<textarea id="message-text" rows="6" placeholder="Paste the message you already reviewed…"></textarea></label>
+          <button id="inspect-target" class="button secondary">Preview page target</button>
+          <div id="target-preview" class="target-preview hidden"></div>
+          <label id="overwrite-row" class="confirm hidden"><input id="allow-overwrite" type="checkbox" />Replace text already in the composer.</label>
+          <button id="fill-message" class="button primary" disabled>Confirm & fill — do not send</button>
+          <p class="guardrail warning"><strong>Important:</strong> This only places text in the composer. It never clicks Send, presses Enter, or submits a form.</p>
+        </section>
+
+        <section id="settings-panel" class="panel">
+          <div class="step-heading"><span>API</span><div><strong>Local or self-hosted endpoint</strong><small>Stored only in Chrome local extension storage.</small></div></div>
+          <label>API base URL<input id="api-base" type="url" value="http://127.0.0.1:8000" /></label>
+          <button id="save-settings" class="button primary">Save settings</button>
+          <div class="permission-list">
+            <strong>Permission boundary</strong>
+            <span>✓ activeTab — only after opening this popup</span>
+            <span>✓ scripting — extraction/fill after a click</span>
+            <span>✓ storage — API address and case ID</span>
+            <span>✓ cloud token — memory only, never saved</span>
+            <span>× no cookies permission</span>
+            <span>× no background content script</span>
+            <span>× no automatic Send action</span>
+          </div>
+        </section>
+      </main>
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+    </div>
+    <script type="module" src="/src/popup.ts"></script>
+  </body>
+</html>

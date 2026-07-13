@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ocdd-worker"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+  "celery[redis]>=5.4,<6",
+  "cryptography>=48.0.1,<49",
+  "pypdf>=6.13.3,<7",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=9.0.3,<10"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["ocdd_worker"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

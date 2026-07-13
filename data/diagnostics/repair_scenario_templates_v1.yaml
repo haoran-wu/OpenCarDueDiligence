@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0",
+  "template_version": "2026.07.12",
+  "license": "CC-BY-SA-4.0",
+  "currency": "USD",
+  "provenance": {
+    "publisher": "OpenCarDueDiligence contributors",
+    "method": "Original uncertainty and arithmetic templates; no proprietary labor guide or commercial price database is included.",
+    "reviewed_at": "2026-07-12"
+  },
+  "rules": [
+    "Every finding produces minimum, most-likely, and worst-reasonable scenarios.",
+    "A DTC never proves a failed component; each scenario lists confirmation tests.",
+    "Normal age-related wear must not be deducted twice in valuation and negotiation.",
+    "UNKNOWN is required when parts, labor, region, or applicability evidence is missing."
+  ],
+  "calculation": {
+    "formula": "diagnostic_fee + parts + (labor_hours * labor_rate) + shop_supplies + tax",
+    "required_ranges": ["diagnostic_fee", "parts", "labor_hours", "labor_rate", "shop_supplies", "tax"],
+    "rounding": "nearest_10_USD_for_buyer_facing_ranges",
+    "location_key": "ZIP3",
+    "shop_types": ["DIY", "independent", "brand_specialist", "dealer"]
+  },
+  "scenario_template": {
+    "id": "string",
+    "label_en": "string",
+    "label_zh": "string",
+    "probability": "not_assigned_without_evidence",
+    "confirmation_tests": [],
+    "cost_inputs": {
+      "diagnostic_fee": {"low": null, "high": null, "source_id": null},
+      "parts": {"low": null, "high": null, "source_id": null},
+      "labor_hours": {"low": null, "high": null, "source_id": null},
+      "labor_rate": {"low": null, "high": null, "source_id": null, "region": null, "shop_type": null},
+      "shop_supplies": {"low": null, "high": null, "source_id": null},
+      "tax": {"low": null, "high": null, "source_id": null}
+    },
+    "total": {"low": null, "high": null, "confidence": "UNKNOWN", "priced_at": null}
+  }
+}

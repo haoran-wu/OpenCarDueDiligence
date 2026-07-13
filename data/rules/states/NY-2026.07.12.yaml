@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "bundle_version": "2026.07.12",
+  "jurisdiction": "NY",
+  "sale_type": "private_party",
+  "rules_effective_as_of": "2026-07-12",
+  "verified_at": "2026-07-12",
+  "refresh_after_days": 90,
+  "license": "CC-BY-SA-4.0",
+  "rule_inheritance": {"hard_stops_from": "../common/private_sale_v1.yaml"},
+  "monitoring": {"official_source_hash_interval_days": 7, "content_hash_status": "BASELINED_2026-07-12", "fingerprint_manifest": "../source_fingerprints.json", "stale_after_days": 90},
+  "provenance": {"publisher": "OpenCarDueDiligence contributors", "authority_class": "official_state_sources_only", "human_reviewed": false, "review_status": "OFFICIAL_SOURCES_CHECKED_HUMAN_SIGNOFF_PENDING"},
+  "sources": [
+    {"id": "ny-transfer", "title": "NY DMV - Buy, Sell, or Transfer Vehicle Ownership", "url": "https://dmv.ny.gov/titles/buy-sell-or-transfer-vehicle-ownership", "publisher": "New York State DMV", "verified_at": "2026-07-12", "supports": ["title", "bill_of_sale", "seller_tasks", "buyer_tasks"]},
+    {"id": "ny-proof-ownership", "title": "NY DMV - Acceptable Proofs of Ownership for Vehicles", "url": "https://dmv.ny.gov/titles/acceptable-proofs-of-ownership-for-vehicles", "publisher": "New York State DMV", "verified_at": "2026-07-12", "supports": ["ownership", "damage_disclosure", "title_jumping"]},
+    {"id": "ny-in-transit", "title": "NY DMV - In-Transit Vehicle Permits", "url": "https://dmv.ny.gov/registration/in-transit-vehicle-permits-temporary-registrations", "publisher": "New York State DMV", "verified_at": "2026-07-12", "supports": ["transport", "permit_fee", "permit_validity", "insurance"]},
+    {"id": "ny-sales-tax", "title": "NY DMV - Sales Tax Information", "url": "https://dmv.ny.gov/registration/sales-tax-information", "publisher": "New York State DMV", "verified_at": "2026-07-12", "supports": ["sales_tax", "DTF-802"]},
+    {"id": "ny-register-title", "title": "NY DMV - Register and Title a Vehicle", "url": "https://dmv.ny.gov/registration/register-and-title-a-vehicle", "publisher": "New York State DMV", "verified_at": "2026-07-12", "supports": ["registration", "insurance"]}
+  ],
+  "forms": [
+    {"id": "MV-912", "name": "Vehicle Bill of Sale", "required_when": "private_sale", "url": "https://dmv.ny.gov/forms/mv912.pdf"},
+    {"id": "DTF-802", "name": "Statement of Transaction", "required_when": "registering_or_titling_in_NY_private_sale", "url": "https://dmv.ny.gov/forms/dtf802.pdf"},
+    {"id": "MV-82", "name": "Vehicle Registration/Title Application", "required_when": "registering_or_titling_in_NY", "url": "https://dmv.ny.gov/forms/mv82.pdf"},
+    {"id": "MV-82ITP", "name": "In-Transit Permit/Title Application", "required_when": "requesting_NY_in_transit_permit", "url": "https://dmv.ny.gov/forms/mv82itp.pdf"}
+  ],
+  "fees": [
+    {"id": "title_only", "amount_usd": 50.0, "condition": "titling_in_NY", "source_id": "ny-register-title"},
+    {"id": "in_transit_permit", "amount_usd": 12.5, "condition": "NY_in_transit_permit", "source_id": "ny-in-transit"},
+    {"id": "sales_tax", "amount_usd": null, "condition": "registering_in_NY", "basis": "state_and_local_rate_calculated_by_DMV; DTF-802 required for private sale", "source_id": "ny-sales-tax"}
+  ],
+  "deadlines": [
+    {"id": "in_transit_validity", "duration": 30, "unit": "calendar_days", "anchor": "issue_date", "source_id": "ny-in-transit"},
+    {"id": "insurance_card_registration_window", "duration": 180, "unit": "calendar_days", "anchor": "insurance_ID_card_effective_date", "condition": "registering_in_NY", "source_id": "ny-register-title"}
+  ],
+  "seller_tasks": [
+    {"id": "ny-seller-assign-title", "order": 10, "text_en": "The titled owner completes and signs the transfer section of the original title, including odometer and damage disclosure where shown.", "text_zh": "title 所列车主填写并签署原始 title 的转让栏，包括页面要求的里程和损伤披露。", "source_id": "ny-transfer"},
+    {"id": "ny-seller-bill-sale", "order": 20, "text_en": "Seller and buyer sign an original MV-912 or equivalent bill of sale containing year/make, VIN, date, price, and both names/signatures.", "text_zh": "买卖双方签署 MV-912 原件或等效 bill of sale，包含年款/品牌、VIN、日期、价格及双方姓名签名。", "source_id": "ny-transfer"},
+    {"id": "ny-seller-no-open-title", "order": 30, "text_en": "Do not accept an open title: the seller must be the owner shown on the ownership proof or a properly documented authorized signer.", "text_zh": "不要接受 open title：卖家必须是所有权文件上的车主或有正确书面授权的签字人。", "source_id": "ny-proof-ownership"},
+    {"id": "ny-seller-remove-plates", "order": 40, "text_en": "The seller keeps and surrenders or transfers New York plates; they do not transfer with the vehicle.", "text_zh": "卖家保留并交回或转用纽约车牌；车牌不会随车辆转让。", "source_id": "ny-transfer"}
+  ],
+  "buyer_tasks": [
+    {"id": "ny-buyer-ownership", "order": 10, "phase": "at_sale", "text_en": "Receive the properly assigned original title and original signed bill of sale before payment.", "text_zh": "付款前取得正确转签的原始 title 和已签字的 bill of sale 原件。", "source_id": "ny-transfer"},
+    {"id": "ny-buyer-tax-form", "order": 20, "phase": "registration", "text_en": "If registering or titling in New York, complete DTF-802 and pay or document sales tax at DMV.", "text_zh": "若在纽约办理 title/registration，填写 DTF-802 并在 DMV 缴纳或证明销售税。", "source_id": "ny-sales-tax"},
+    {"id": "ny-buyer-insure", "order": 30, "phase": "before_driving", "text_en": "Obtain insurance acceptable for the chosen registration or in-transit permit before driving.", "text_zh": "驾驶前取得符合 registration 或 in-transit permit 要求的保险。", "source_id": "ny-in-transit"},
+    {"id": "ny-buyer-permit", "order": 40, "phase": "before_driving", "text_en": "For a vehicle bought in New York and taken out of state, obtain an interstate in-transit permit at DMV or tow/trailer it.", "text_zh": "在纽约购车并运往外州时，到 DMV 取得 interstate in-transit permit，或使用拖车运输。", "source_id": "ny-in-transit"}
+  ],
+  "transport_options": [
+    {"id": "tow_or_trailer", "allowed": true, "requirements": ["secure_transport_booking"]},
+    {"id": "in_transit_permit", "allowed": true, "requirements": ["MV-82ITP", "proof_of_ownership", "proof_of_identity", "acceptable_insurance", "$12.50 fee"], "valid_days": 30},
+    {"id": "drive_registered", "allowed": true, "requirements": ["insurance_active_for_vin", "registration_and_plates_issued_for_vehicle"]},
+    {"id": "seller_plate", "allowed": false, "reason": "New York plates stay with the seller and are not ownership documents."}
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0",
+  "bundle_version": "2026.07.12",
+  "jurisdiction": "CT",
+  "sale_type": "private_party",
+  "rules_effective_as_of": "2026-07-12",
+  "verified_at": "2026-07-12",
+  "refresh_after_days": 90,
+  "license": "CC-BY-SA-4.0",
+  "rule_inheritance": {"hard_stops_from": "../common/private_sale_v1.yaml"},
+  "monitoring": {"official_source_hash_interval_days": 7, "content_hash_status": "BASELINED_2026-07-12", "fingerprint_manifest": "../source_fingerprints.json", "stale_after_days": 90},
+  "provenance": {"publisher": "OpenCarDueDiligence contributors", "authority_class": "official_state_sources_only", "human_reviewed": false, "review_status": "OFFICIAL_SOURCES_CHECKED_HUMAN_SIGNOFF_PENDING"},
+  "sources": [
+    {"id": "ct-sell", "title": "CT DMV - Sell your vehicle", "url": "https://portal.ct.gov/dmv/vehicle-services/sell-vehicle", "publisher": "Connecticut DMV", "verified_at": "2026-07-12", "supports": ["seller_tasks", "title", "bill_of_sale", "plates"]},
+    {"id": "ct-proof-ownership", "title": "CT DMV - Proof of ownership requirements", "url": "https://portal.ct.gov/dmv/vehicle-services/proof-of-vehicle-ownership", "publisher": "Connecticut DMV", "verified_at": "2026-07-12", "supports": ["title", "non_titled_vehicle", "forms"]},
+    {"id": "ct-temp", "title": "CT DMV - Get a temporary registration", "url": "https://portal.ct.gov/dmv/vehicle-services/get-temporary-registration", "publisher": "Connecticut DMV", "verified_at": "2026-07-12", "supports": ["inspection_temp", "tax", "fee"]},
+    {"id": "ct-in-transit", "title": "CT DMV - In-transit registration", "url": "https://portal.ct.gov/dmv/vehicle-services/get-temporary-registration/in-transit-registration", "publisher": "Connecticut DMV", "verified_at": "2026-07-12", "supports": ["nonresident_transport", "insurance_limits", "forms", "fee"]},
+    {"id": "ct-in-transit-manual", "title": "CT DMV Dealer Online Registration Program Manual - In-Transit Registration", "url": "https://portal.ct.gov/dmv/-/media/dmv/20/29/dealer-online-manual.pdf", "publisher": "Connecticut DMV", "verified_at": "2026-07-12", "supports": ["in_transit_validity"]},
+    {"id": "ct-out-state", "title": "CT DMV - Register a vehicle purchased in another state", "url": "https://portal.ct.gov/dmv/vehicle-services/get-temporary-registration/register-out-of-state-vehicle", "publisher": "Connecticut DMV", "verified_at": "2026-07-12", "supports": ["deadline", "inspection", "documents"]},
+    {"id": "ct-tax", "title": "CT DMV - Sales tax on first-time vehicle registrations", "url": "https://portal.ct.gov/dmv/vehicle-services/sales-tax-registrations", "publisher": "Connecticut DMV", "verified_at": "2026-07-12", "supports": ["sales_tax"]},
+    {"id": "ct-fees", "title": "CT DMV - DMV fees", "url": "https://portal.ct.gov/dmv/resources/dmv-fees", "publisher": "Connecticut DMV", "verified_at": "2026-07-12", "supports": ["registration_fees", "title_fee"]}
+  ],
+  "forms": [
+    {"id": "H-13B", "name": "Application for Registration and Title", "required_when": "registering_or_requesting_temp_in_CT", "url": "https://portal.ct.gov/dmv/-/media/dmv/20/29/h13bpdf.pdf"},
+    {"id": "H-31", "name": "Bill of Sale", "required_when": "private_sale", "url": "https://portal.ct.gov/dmv/-/media/dmv/20/29/h31pdf.pdf"},
+    {"id": "Q-1", "name": "Supplemental Assignment of Ownership and/or Bill of Sale", "required_when": "CT_vehicle_is_title_exempt", "url": "https://portal.ct.gov/dmv/-/media/dmv/20/29/q1pdf.pdf"}
+  ],
+  "fees": [
+    {"id": "passenger_registration", "amount_usd": 120.0, "condition": "regular_passenger_vehicle", "source_id": "ct-fees"},
+    {"id": "plate", "amount_usd": 5.0, "condition": "new_regular_plate", "source_id": "ct-fees"},
+    {"id": "title", "amount_usd": 25.0, "condition": "title_required", "source_id": "ct-fees"},
+    {"id": "administrative", "amount_usd": 10.0, "condition": "regular_registration", "source_id": "ct-fees"},
+    {"id": "clean_air", "amount_usd": 15.0, "condition": "regular_non_EV_passenger_vehicle", "source_id": "ct-fees"},
+    {"id": "passport_to_parks", "amount_usd": 24.0, "condition": "regular_passenger_vehicle_after_2025-07-01", "source_id": "ct-fees"},
+    {"id": "lien", "amount_usd": 10.0, "condition": "lien_recorded", "source_id": "ct-fees"},
+    {"id": "inspection_temporary_registration", "amount_usd": 21.0, "condition": "10_day_noncommercial_temp", "source_id": "ct-temp"},
+    {"id": "nonresident_in_transit", "amount_usd": 21.0, "condition": "out_of_state_resident_buys_in_CT", "source_id": "ct-in-transit"},
+    {"id": "sales_tax_standard", "rate": 0.0635, "condition": "private_sale_value_at_or_below_50000", "basis": "higher_of_bill_of_sale_or_NADA_average_trade_in_value", "source_id": "ct-tax"},
+    {"id": "sales_tax_high_value", "rate": 0.0775, "condition": "private_sale_value_over_50000", "basis": "higher_of_bill_of_sale_or_NADA_average_trade_in_value", "source_id": "ct-tax"}
+  ],
+  "deadlines": [
+    {"id": "out_of_state_purchase_registration", "duration": 90, "unit": "calendar_days", "anchor": "purchase_or_CT_residency_date_as_applicable", "condition": "registering_out_of_state_purchase_in_CT", "source_id": "ct-out-state"},
+    {"id": "inspection_temp_validity", "duration": 10, "unit": "calendar_days", "anchor": "issue_date", "source_id": "ct-temp"},
+    {"id": "in_transit_validity", "duration": 30, "unit": "calendar_days", "anchor": "issue_date", "condition": "out_of_state_resident_buys_in_CT", "source_id": "ct-in-transit-manual"}
+  ],
+  "seller_tasks": [
+    {"id": "ct-seller-title", "order": 10, "text_en": "Complete and sign the reverse of the title and give it to the buyer; use Q-1 plus the most recent registration when the vehicle is CT title-exempt.", "text_zh": "填写并签署 title 背面交给买家；若车辆在 CT 免 title，则使用 Q-1 和最近 registration。", "source_id": "ct-sell"},
+    {"id": "ct-seller-bill-sale", "order": 20, "text_en": "Provide H-31 or an equivalent signed bill of sale with buyer/seller names and addresses, vehicle description and VIN, price, date, and seller signature.", "text_zh": "提供 H-31 或等效签字 bill of sale，包含双方姓名地址、车辆信息和 VIN、价格、日期及卖家签名。", "source_id": "ct-sell"},
+    {"id": "ct-seller-plates", "order": 30, "text_en": "Remove plates and cancel the seller's registration; do not cancel insurance until registration is canceled.", "text_zh": "拆下车牌并取消卖家 registration；应先取消 registration，再取消保险。", "source_id": "ct-sell"}
+  ],
+  "buyer_tasks": [
+    {"id": "ct-buyer-documents", "order": 10, "phase": "at_sale", "text_en": "Receive the assigned ownership document and H-31 bill of sale before payment.", "text_zh": "付款前取得已转签的所有权文件和 H-31 bill of sale。", "source_id": "ct-proof-ownership"},
+    {"id": "ct-buyer-insure", "order": 20, "phase": "before_driving", "text_en": "Obtain insurance in the buyer's name for the VIN before requesting any temporary or permanent registration.", "text_zh": "申请临时或正式 registration 前，以买家名义为该 VIN 购买保险。", "source_id": "ct-temp"},
+    {"id": "ct-buyer-temp", "order": 30, "phase": "inspection", "text_en": "If inspection, emissions, or VIN verification is required before permanent registration, make a DMV appointment for a 10-day temporary registration.", "text_zh": "若正式登记前需验车、排放或 VIN 核验，预约 DMV 申请 10 天临时 registration。", "source_id": "ct-temp"},
+    {"id": "ct-buyer-register", "order": 40, "phase": "registration", "text_en": "Bring H-13B, original ownership document, H-31, ID, CT insurance, inspection/VIN documents when required, and applicable fees and tax to the DMV appointment.", "text_zh": "在 DMV 预约时携带 H-13B、原始所有权文件、H-31、身份证件、CT 保险、所需验车/VIN 文件及相关税费。", "source_id": "ct-out-state"}
+  ],
+  "transport_options": [
+    {"id": "tow_or_trailer", "allowed": true, "requirements": ["secure_transport_booking"]},
+    {"id": "temporary_registration", "allowed": true, "requirements": ["assigned_title", "H-31", "H-13B", "CT_insurance", "ID", "$21 fee"], "valid_days": 10},
+    {"id": "in_transit_permit", "allowed": true, "condition": "nonresident_buys_vehicle_in_CT", "requirements": ["assigned_title", "H-31_or_Q-1", "H-13B", "out_of_state_ID", "insurance_meeting_CT_25_50_25", "$21 fee"], "valid_days": 30},
+    {"id": "seller_plate", "allowed": false, "reason": "The seller removes Connecticut plates and cancels the registration."}
+  ]
+}

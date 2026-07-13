@@ -1,0 +1,126 @@
+{
+  "schema_version": "1.0",
+  "bundle_version": "2026.07.12",
+  "scope": "US private-party passenger vehicle purchase",
+  "verified_at": "2026-07-12",
+  "refresh_after_days": 90,
+  "license": "CC-BY-SA-4.0",
+  "provenance": {
+    "publisher": "OpenCarDueDiligence contributors",
+    "method": "Buyer-safety rules derived from the linked state motor-vehicle sources; no third-party commercial data is redistributed.",
+    "review_required_for_changes": true
+  },
+  "hard_stops": [
+    {
+      "id": "missing_original_title",
+      "field": "title_status",
+      "operator": "in",
+      "value": ["MISSING"],
+      "message_en": "Do not pay: the original transferable title or state-approved ownership document is missing.",
+      "message_zh": "不要付款：缺少可转让的原始 title 或州政府认可的所有权文件。"
+    },
+    {
+      "id": "title_altered",
+      "field": "title_status",
+      "operator": "in",
+      "value": ["ALTERED", "ALREADY_ASSIGNED"],
+      "message_en": "Do not pay: the ownership document appears altered, erased, overwritten, or reassigned incorrectly.",
+      "message_zh": "不要付款：所有权文件存在涂改、擦除、覆盖或错误转签。"
+    },
+    {
+      "id": "seller_title_identity_mismatch",
+      "field": "identity_title_match",
+      "operator": "equals",
+      "value": "MISMATCH",
+      "message_en": "Do not pay: the seller's identity does not match the titled owner or documented authorized signer.",
+      "message_zh": "不要付款：卖家身份与 title 车主或有书面授权的签字人不一致。"
+    },
+    {
+      "id": "unreleased_lien",
+      "field": "lien_status",
+      "operator": "in",
+      "value": ["ACTIVE"],
+      "message_en": "Do not pay until every recorded lien is released with acceptable original documentation.",
+      "message_zh": "在所有登记 lien 均以合格原始文件解除前不要付款。"
+    },
+    {
+      "id": "seller_refuses_bill_of_sale",
+      "field": "seller_allows_bill_of_sale",
+      "operator": "equals",
+      "value": false,
+      "message_en": "Stop: the seller refuses a complete signed bill of sale.",
+      "message_zh": "停止交易：卖家拒绝签署信息完整的 bill of sale。"
+    },
+    {
+      "id": "seller_refuses_ppi",
+      "field": "seller_allows_ppi",
+      "operator": "equals",
+      "value": false,
+      "message_en": "Stop: the seller refuses an independent pre-purchase inspection.",
+      "message_zh": "停止交易：卖家拒绝独立购前检查（PPI）。"
+    },
+    {
+      "id": "odometer_disclosure_refused",
+      "field": "seller_will_disclose_odometer",
+      "operator": "equals",
+      "value": false,
+      "message_en": "Stop: the required odometer disclosure is unavailable or refused.",
+      "message_zh": "停止交易：无法取得或卖家拒绝提供所需里程披露。"
+    },
+    {
+      "id": "illegal_transport_plate",
+      "field": "transport_option",
+      "operator": "in",
+      "value": ["seller_plate", "borrowed_plate", "drive_unregistered"],
+      "message_en": "Do not drive: a seller's, friend's, or unrelated vehicle's plate does not authorize this vehicle.",
+      "message_zh": "不要驾驶：卖家、朋友或其他车辆的车牌不能合法授权这辆车上路。"
+    },
+    {
+      "id": "drive_without_vin_insurance",
+      "field": "insurance_active_for_vin",
+      "operator": "equals_when",
+      "value": false,
+      "when": {"transport_option": ["valid_temp_permit", "valid_registration_and_plate"]},
+      "message_en": "Do not drive until liability insurance is active for this VIN.",
+      "message_zh": "在针对该 VIN 的责任险生效前不要驾驶。"
+    },
+    {
+      "id": "vin_mismatch",
+      "field": "vin_match",
+      "operator": "equals",
+      "value": "MISMATCH",
+      "message_en": "Do not pay: the vehicle VIN does not match the title or ownership evidence.",
+      "message_zh": "不要付款：车辆 VIN 与 title 或所有权证据不一致。"
+    }
+  ],
+  "verification_gates": [
+    {
+      "id": "unverified_title_status",
+      "field": "title_status",
+      "operator": "equals",
+      "value": "UNKNOWN",
+      "decision": "INSPECT",
+      "message_en": "Do not commit or pay until the original title status is verified.",
+      "message_zh": "在核实原始 title 状态前不要承诺或付款。"
+    },
+    {
+      "id": "unverified_identity_or_vin_match",
+      "fields": ["identity_title_match", "vin_match"],
+      "operator": "any_equals",
+      "value": "UNKNOWN",
+      "decision": "INSPECT",
+      "message_en": "Unknown identity or VIN matching remains a blocked evidence gate, not a pass.",
+      "message_zh": "身份或 VIN 核对未知时仍是证据闸门，不能视为通过。"
+    }
+  ],
+  "always_collect": [
+    "Vehicle VIN from the dashboard, door label, title, listing, and history report",
+    "Seller photo ID name match result; never retain the raw name in cloud case data",
+    "Original ownership document, lien release if applicable, signed bill of sale, sale price, date, and odometer",
+    "Insurance effective for the VIN and a legal transport option before the vehicle moves"
+  ],
+  "transport_modes": {
+    "allowed": ["tow", "carrier", "valid_temp_permit", "valid_registration_and_plate"],
+    "never_allowed": ["seller_plate", "borrowed_plate", "drive_unregistered"]
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "schema_version": "1.0",
+  "tree_version": "2026.07.12",
+  "license": "CC-BY-SA-4.0",
+  "provenance": {
+    "publisher": "OpenCarDueDiligence contributors",
+    "method": "Original generic OBD-II diagnostic triage. Cost bands are deliberately broad 2026 nationwide planning allowances, not quotes or component diagnoses.",
+    "reviewed_at": "2026-07-12",
+    "commercial_database_content": false
+  },
+  "cost_band_policy": {"currency": "USD", "region": "US_nationwide", "shop_type": "independent", "confidence": "LOW", "must_localize_before_negotiation": true},
+  "trees": [
+    {
+      "id": "P0301",
+      "code_pattern": "P0301",
+      "label_en": "Cylinder 1 misfire detected",
+      "label_zh": "检测到 1 缸失火",
+      "basic_obd_visibility": "usually_yes_for_powertrain_code",
+      "direct_replacement_forbidden": true,
+      "triage": {"stranding_risk": "POSSIBLE", "catalyst_damage_risk": "POSSIBLE_IF_FLASHING_MIL_OR_ACTIVE_MISFIRE", "stop_drive_when": ["flashing_MIL", "severe_shaking", "fuel_smell", "overheating", "oil_pressure_warning"]},
+      "possible_systems": ["ignition", "fuel_injector_or_delivery", "intake_or_vacuum", "compression_or_valvetrain", "cooling_or_head_gasket", "wiring_or_control"],
+      "confirmation_tests": ["preserve freeze-frame and misfire counters", "inspect plug condition and verify correct part/gap", "swap-test ignition components only when safe and applicable", "injector balance or command test", "smoke-test intake when trims support an air leak", "compression/leak-down or relative-compression test when indicated", "check model-specific service information"],
+      "scenarios": [
+        {"level": "minimum", "description_en": "Connector, plug, localized ignition, or small intake issue confirmed by testing.", "description_zh": "经测试确认的插头、火花塞、局部点火或小型进气问题。", "planning_cost_usd": [150, 650]},
+        {"level": "most_likely", "description_en": "Ignition, injector, air leak, wiring, or related repair plus diagnosis; component remains unknown until tested.", "description_zh": "点火、喷油、漏气、线路或相关维修加诊断；测试前具体部件未知。", "planning_cost_usd": [350, 1500]},
+        {"level": "worst_reasonable", "description_en": "Low compression, valvetrain, head-gasket, or engine mechanical repair.", "description_zh": "低缸压、气门机构、缸垫或发动机机械维修。", "planning_cost_usd": [2200, 10000]}
+      ]
+    },
+    {
+      "id": "P0420",
+      "code_pattern": "P0420",
+      "label_en": "Catalyst system efficiency below threshold, bank 1",
+      "label_zh": "1 组催化系统效率低于阈值",
+      "basic_obd_visibility": "usually_yes_for_powertrain_code",
+      "direct_replacement_forbidden": true,
+      "triage": {"stranding_risk": "USUALLY_LOW_BUT_CAUSE_DEPENDENT", "inspection_failure_risk": "HIGH", "stop_drive_when": ["flashing_MIL", "overheating_catalyst", "major_power_loss", "fuel_smell"]},
+      "possible_systems": ["exhaust_leak", "oxygen_sensor_or_wiring", "catalyst", "fuel_control", "misfire", "oil_or_coolant_consumption"],
+      "confirmation_tests": ["check companion and pending codes first", "inspect for upstream and downstream exhaust leaks", "review fuel trims and misfire history", "compare upstream/downstream oxygen-sensor response using applicable test procedure", "verify engine is not consuming oil or coolant", "confirm catalyst temperature or oxygen-storage behavior where supported"],
+      "scenarios": [
+        {"level": "minimum", "description_en": "Exhaust leak, connector, wiring, or sensor issue confirmed without catalyst replacement.", "description_zh": "经确认的排气泄漏、插头、线路或传感器问题，无需更换催化器。", "planning_cost_usd": [180, 900]},
+        {"level": "most_likely", "description_en": "Sensor or catalyst-related repair after engine-condition and leak tests.", "description_zh": "完成发动机状态和泄漏测试后确认的传感器或催化器相关维修。", "planning_cost_usd": [500, 3200]},
+        {"level": "worst_reasonable", "description_en": "Underlying misfire/oil/coolant problem plus catalyst and related exhaust repair.", "description_zh": "底层失火、烧机油/冷却液问题，加催化器及相关排气维修。", "planning_cost_usd": [2800, 9000]}
+      ]
+    },
+    {
+      "id": "P0171",
+      "code_pattern": "P0171",
+      "label_en": "System too lean, bank 1",
+      "label_zh": "1 组混合气过稀",
+      "basic_obd_visibility": "usually_yes_for_powertrain_code",
+      "direct_replacement_forbidden": true,
+      "triage": {"stranding_risk": "POSSIBLE", "engine_damage_risk": "CAUSE_AND_SEVERITY_DEPENDENT", "stop_drive_when": ["severe_hesitation", "flashing_MIL", "fuel_pressure_loss", "overheating"]},
+      "possible_systems": ["unmetered_air", "PCV_or_evap", "MAF_or_air_metering", "fuel_pressure_or_pump", "injectors", "exhaust_leak_before_sensor", "sensor_or_wiring"],
+      "confirmation_tests": ["preserve freeze-frame and compare short/long fuel trims at idle and load", "smoke-test intake/PCV/EVAP as applicable", "inspect air-metering contamination and wiring", "measure fuel pressure/volume under load when indicated", "evaluate injector balance", "check exhaust leaks and oxygen-sensor plausibility"],
+      "scenarios": [
+        {"level": "minimum", "description_en": "Small hose, intake seal, PCV, wiring, or service issue confirmed.", "description_zh": "经确认的小软管、进气密封、PCV、线路或维护问题。", "planning_cost_usd": [150, 750]},
+        {"level": "most_likely", "description_en": "Air-metering, vacuum/PCV, sensor, injector, or fuel-delivery repair.", "description_zh": "空气计量、真空/PCV、传感器、喷油或供油维修。", "planning_cost_usd": [400, 2200]},
+        {"level": "worst_reasonable", "description_en": "Fuel-pump/system failure or multiple air/fuel faults with consequential damage.", "description_zh": "燃油泵/系统故障或多项空燃故障并造成连带损伤。", "planning_cost_usd": [1800, 6000]}
+      ]
+    },
+    {
+      "id": "P0299",
+      "code_pattern": "P0299",
+      "label_en": "Turbocharger/supercharger underboost",
+      "label_zh": "涡轮/机械增压压力不足",
+      "basic_obd_visibility": "usually_yes_for_powertrain_code",
+      "direct_replacement_forbidden": true,
+      "triage": {"stranding_risk": "POSSIBLE", "engine_damage_risk": "POSSIBLE_IF_OIL_SUPPLY_OR_TURBO_FAILURE", "stop_drive_when": ["blue_smoke", "metallic_turbo_noise", "oil_pressure_warning", "runaway_engine", "major_power_loss_in_traffic"]},
+      "possible_systems": ["charge_pipe_or_intercooler_leak", "vacuum_or_control_solenoid", "wastegate_or_actuator", "sensor_or_wiring", "exhaust_restriction", "turbocharger", "engine_airflow_or_compression"],
+      "confirmation_tests": ["preserve requested-versus-actual boost and freeze-frame", "pressure/smoke-test charge tract", "inspect vacuum supply and control solenoid", "command or measure actuator/wastegate travel", "check sensor plausibility", "inspect turbo shaft/end play and oil supply only with proper procedure", "check model-specific service information"],
+      "scenarios": [
+        {"level": "minimum", "description_en": "Charge leak, hose, clamp, vacuum line, connector, or control issue.", "description_zh": "增压管泄漏、软管/卡箍、真空管、插头或控制问题。", "planning_cost_usd": [200, 1000]},
+        {"level": "most_likely", "description_en": "Actuator/wastegate, control, intercooler, sensor, or turbo-adjacent repair after testing.", "description_zh": "测试后确认的执行器/废气阀、控制、中冷、传感器或涡轮周边维修。", "planning_cost_usd": [750, 3500]},
+        {"level": "worst_reasonable", "description_en": "Turbocharger replacement plus oil/feed, catalyst, or engine damage remediation.", "description_zh": "更换涡轮，并处理供油、催化器或发动机连带损伤。", "planning_cost_usd": [3000, 11000]}
+      ]
+    },
+    {
+      "id": "P07xx",
+      "code_pattern": "P07[0-9A-F]{2}",
+      "label_en": "Transmission control fault family",
+      "label_zh": "变速箱控制故障代码族",
+      "basic_obd_visibility": "some_generic_powertrain_codes_only; OEM_transmission_module_scan_required",
+      "direct_replacement_forbidden": true,
+      "triage": {"stranding_risk": "POSSIBLE_TO_HIGH", "safety_risk": "POSSIBLE_IF_LIMP_MODE_OR_LOSS_OF_DRIVE", "stop_drive_when": ["loss_of_drive", "cannot_select_gear", "severe_slip", "overheat_warning", "fluid_loss", "violent_engagement"]},
+      "possible_systems": ["fluid_level_condition_or_leak", "battery_voltage_or_power", "wiring_or_connector", "speed_or_pressure_sensor", "solenoid_or_valve_body", "clutch_or_internal_hard_parts", "TCM_software_or_hardware"],
+      "confirmation_tests": ["retain the exact P07xx code and transmission-module subcodes", "verify fluid level/condition using manufacturer procedure", "load-test battery and charging system", "inspect connectors, harness, grounds, and leaks", "review input/output speed, commanded gear, slip, pressure, and temperature data", "perform applicable pressure/adaptation tests", "obtain transmission-specialist diagnosis before pricing internal repair"],
+      "scenarios": [
+        {"level": "minimum", "description_en": "Fluid service/leak, voltage, connector, wiring, or external sensor issue confirmed.", "description_zh": "经确认的油液/泄漏、电压、插头、线路或外部传感器问题。", "planning_cost_usd": [250, 1200]},
+        {"level": "most_likely", "description_en": "Sensor, solenoid, valve-body, mechatronic, clutch-control, or module repair; exact code and transmission determine applicability.", "description_zh": "传感器、电磁阀、阀体、机电单元、离合控制或模块维修；必须结合具体代码和变速箱。", "planning_cost_usd": [900, 4000]},
+        {"level": "worst_reasonable", "description_en": "Transmission removal, rebuild/replacement, cooling-system cleanup, and programming/adaptation.", "description_zh": "拆卸、翻修/更换变速箱，并清理冷却系统及编程/自适应。", "planning_cost_usd": [4000, 12000]}
+      ]
+    }
+  ]
+}

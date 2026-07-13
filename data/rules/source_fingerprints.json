@@ -1,0 +1,187 @@
+{
+  "checked_at": "2026-07-13T19:43:56Z",
+  "note": "A hash match is only an automated signal; human review remains required every 90 days.",
+  "schema_version": "1.0",
+  "sources": [
+    {
+      "content_sha256": "0fedf3a9f3365086fb9360b8e3b18d07d4f196ba4101b9373a2e3c772eae4e8c",
+      "final_url": "https://portal.ct.gov/dmv/vehicle-services/sell-vehicle",
+      "hash_basis": "normalized_visible_text",
+      "id": "ct-sell",
+      "jurisdiction": "CT",
+      "media_type": "text/html",
+      "reviewed_at": "2026-07-12",
+      "url": "https://portal.ct.gov/dmv/vehicle-services/sell-vehicle"
+    },
+    {
+      "content_sha256": "a3709add88eca4960d21db9bf9fff16a2c300b6ee15141cb1e951e8d63eb8e27",
+      "final_url": "https://portal.ct.gov/dmv/vehicle-services/proof-of-vehicle-ownership",
+      "hash_basis": "normalized_visible_text",
+      "id": "ct-proof-ownership",
+      "jurisdiction": "CT",
+      "media_type": "text/html",
+      "reviewed_at": "2026-07-12",
+      "url": "https://portal.ct.gov/dmv/vehicle-services/proof-of-vehicle-ownership"
+    },
+    {
+      "content_sha256": "71c9ee3d1ef1145e32652c4f599f0e389365d1d550aeed99de9da2c9f2af7e74",
+      "final_url": "https://portal.ct.gov/dmv/vehicle-services/get-temporary-registration",
+      "hash_basis": "normalized_visible_text",
+      "id": "ct-temp",
+      "jurisdiction": "CT",
+      "media_type": "text/html",
+      "reviewed_at": "2026-07-12",
+      "url": "https://portal.ct.gov/dmv/vehicle-services/get-temporary-registration"
+    },
+    {
+      "content_sha256": "876572c2d1d86bbce778bbde5f1dbca9279737d1bcf79c757b826bdd9d546324",
+      "final_url": "https://portal.ct.gov/dmv/vehicle-services/get-temporary-registration/in-transit-registration",
+      "hash_basis": "normalized_visible_text",
+      "id": "ct-in-transit",
+      "jurisdiction": "CT",
+      "media_type": "text/html",
+      "reviewed_at": "2026-07-12",
+      "url": "https://portal.ct.gov/dmv/vehicle-services/get-temporary-registration/in-transit-registration"
+    },
+    {
+      "content_sha256": "ea9a5b732be46c3bd1fed5af8195b3e2a475c3f08ea1784ab72797e6157a5afe",
+      "final_url": "https://portal.ct.gov/dmv/-/media/dmv/20/29/dealer-online-manual.pdf",
+      "hash_basis": "raw_pdf",
+      "id": "ct-in-transit-manual",
+      "jurisdiction": "CT",
+      "media_type": "application/pdf",
+      "reviewed_at": "2026-07-12",
+      "url": "https://portal.ct.gov/dmv/-/media/dmv/20/29/dealer-online-manual.pdf"
+    },
+    {
+      "content_sha256": "3176842ad7101b8340f8491b0fe31a9d272c3137647041287965ac409d81738f",
+      "final_url": "https://portal.ct.gov/dmv/vehicle-services/get-temporary-registration/register-out-of-state-vehicle",
+      "hash_basis": "normalized_visible_text",
+      "id": "ct-out-state",
+      "jurisdiction": "CT",
+      "media_type": "text/html",
+      "reviewed_at": "2026-07-12",
+      "url": "https://portal.ct.gov/dmv/vehicle-services/get-temporary-registration/register-out-of-state-vehicle"
+    },
+    {
+      "content_sha256": "d65eccfaec464c9ee6e19953bd3c4dc63dc51605304e710fa0470d59dd515e71",
+      "final_url": "https://portal.ct.gov/dmv/vehicle-services/sales-tax-registrations",
+      "hash_basis": "normalized_visible_text",
+      "id": "ct-tax",
+      "jurisdiction": "CT",
+      "media_type": "text/html",
+      "reviewed_at": "2026-07-12",
+      "url": "https://portal.ct.gov/dmv/vehicle-services/sales-tax-registrations"
+    },
+    {
+      "content_sha256": "ddc82f039b84981ffa552210b39ec8ffc4aa9c7153b856044d470daaca8cc325",
+      "final_url": "https://portal.ct.gov/dmv/resources/dmv-fees",
+      "hash_basis": "normalized_visible_text",
+      "id": "ct-fees",
+      "jurisdiction": "CT",
+      "media_type": "text/html",
+      "reviewed_at": "2026-07-12",
+      "url": "https://portal.ct.gov/dmv/resources/dmv-fees"
+    },
+    {
+      "content_sha256": "e8857936b4461b1f8fe390ce1d3b07d3e4121bc6a3f92034dfe2d9590594ea5e",
+      "final_url": "https://www.nj.gov/mvc/vehicles/preowntitle.htm",
+      "hash_basis": "normalized_visible_text",
+      "id": "nj-preowned-title",
+      "jurisdiction": "NJ",
+      "media_type": "text/html",
+      "reviewed_at": "2026-07-12",
+      "url": "https://www.nj.gov/mvc/vehicles/preowntitle.htm"
+    },
+    {
+      "content_sha256": "550bcfb86bf22bc3e3ded7b8a84dc2e0f6db25aecb04e85041b194bb337c63a6",
+      "final_url": "https://www.nj.gov/mvc/vehicles/transowner.htm",
+      "hash_basis": "normalized_visible_text",
+      "id": "nj-transfer-ownership",
+      "jurisdiction": "NJ",
+      "media_type": "text/html",
+      "reviewed_at": "2026-07-12",
+      "url": "https://www.nj.gov/mvc/vehicles/transowner.htm"
+    },
+    {
+      "content_sha256": "5e23bb1dfd17b4fe2e46203ca0bd02457897e654068157a041212d8e843517d9",
+      "final_url": "https://www.nj.gov/treasury/taxation/moveqa.shtml",
+      "hash_basis": "normalized_visible_text_window",
+      "id": "nj-casual-sales-tax",
+      "jurisdiction": "NJ",
+      "media_type": "text/html",
+      "reviewed_at": "2026-07-13",
+      "url": "https://www.nj.gov/treasury/taxation/moveqa.shtml"
+    },
+    {
+      "content_sha256": "cf6b9102222080582b057087a1c4ede9f6e362fedcdfddbd3abf9c197d8434b8",
+      "final_url": "https://www.nj.gov/mvc/locations/agency_services.htm",
+      "hash_basis": "normalized_visible_text",
+      "id": "nj-vehicle-centers",
+      "jurisdiction": "NJ",
+      "media_type": "text/html",
+      "reviewed_at": "2026-07-12",
+      "url": "https://www.nj.gov/mvc/locations/agency_services.htm"
+    },
+    {
+      "content_sha256": "74998bd2280351964675197cbbf5a2d0306b750162465114ebbaf2c12f054f52",
+      "final_url": "https://www.nj.gov/mvc/vehicles/tempnonres.htm",
+      "hash_basis": "normalized_visible_text",
+      "id": "nj-temp-nonresident",
+      "jurisdiction": "NJ",
+      "media_type": "text/html",
+      "reviewed_at": "2026-07-12",
+      "url": "https://www.nj.gov/mvc/vehicles/tempnonres.htm"
+    },
+    {
+      "content_sha256": "f97253c7a796bf41fdea10baf0cb533f9bb19bb09c79c6cd72ab39bcba1659b7",
+      "final_url": "https://dmv.ny.gov/titles/buy-sell-or-transfer-vehicle-ownership",
+      "hash_basis": "normalized_visible_text",
+      "id": "ny-transfer",
+      "jurisdiction": "NY",
+      "media_type": "text/html",
+      "reviewed_at": "2026-07-12",
+      "url": "https://dmv.ny.gov/titles/buy-sell-or-transfer-vehicle-ownership"
+    },
+    {
+      "content_sha256": "a5bed52feff6b2ea931c17515a3f70695c5bb17195ec9f23793f902f0e3d7279",
+      "final_url": "https://dmv.ny.gov/titles/acceptable-proofs-of-ownership-for-vehicles",
+      "hash_basis": "normalized_visible_text",
+      "id": "ny-proof-ownership",
+      "jurisdiction": "NY",
+      "media_type": "text/html",
+      "reviewed_at": "2026-07-12",
+      "url": "https://dmv.ny.gov/titles/acceptable-proofs-of-ownership-for-vehicles"
+    },
+    {
+      "content_sha256": "238d83b8a6a597501894f8f46cd37492e5e0189d2259f643ed3c9aff4771a1e1",
+      "final_url": "https://dmv.ny.gov/registration/in-transit-vehicle-permits-temporary-registrations",
+      "hash_basis": "normalized_visible_text",
+      "id": "ny-in-transit",
+      "jurisdiction": "NY",
+      "media_type": "text/html",
+      "reviewed_at": "2026-07-12",
+      "url": "https://dmv.ny.gov/registration/in-transit-vehicle-permits-temporary-registrations"
+    },
+    {
+      "content_sha256": "f20e602fee3b464034365ad5ec0607b356f1abfe26b661e5271fdfc9101c390a",
+      "final_url": "https://dmv.ny.gov/registration/sales-tax-information",
+      "hash_basis": "normalized_visible_text",
+      "id": "ny-sales-tax",
+      "jurisdiction": "NY",
+      "media_type": "text/html",
+      "reviewed_at": "2026-07-12",
+      "url": "https://dmv.ny.gov/registration/sales-tax-information"
+    },
+    {
+      "content_sha256": "66e857c3d19e559ecf9cbfd561b3a562d292bc32e599e81f6d9ca1e469356045",
+      "final_url": "https://dmv.ny.gov/registration/register-and-title-a-vehicle",
+      "hash_basis": "normalized_visible_text",
+      "id": "ny-register-title",
+      "jurisdiction": "NY",
+      "media_type": "text/html",
+      "reviewed_at": "2026-07-12",
+      "url": "https://dmv.ny.gov/registration/register-and-title-a-vehicle"
+    }
+  ]
+}

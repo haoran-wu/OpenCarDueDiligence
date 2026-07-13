@@ -1,0 +1,8 @@
+# Minimal, de-identified ownership-summary text from a CARFAX-style report.
+7 Previous Owners
+
+Additional History  Owners 1-5  Owner 6  Owner 7
+Not all accidents or issues are reported
+Title History  Owners 1-5  Owner 6  Owner 7
+Ownership History  Owners 1-5  Owner 6  Owner 7
+The number of owners is estimated
