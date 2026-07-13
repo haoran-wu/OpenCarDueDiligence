@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from datetime import date
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from app.engines.transaction import build_transaction_plan
 from app.models import (
@@ -72,8 +73,14 @@ def test_nj_buyer_with_ny_title_gets_origin_transport_and_nj_registration(monkey
     assert "in-transit" in combined
     assert "OS/SS-UTA" in combined
     assert "6.625%" in combined
-    assert any(step.official_url and "dmv.ny.gov" in step.official_url for step in plan.steps)
-    assert any(step.official_url and "nj.gov" in step.official_url for step in plan.steps)
+    official_hosts = {
+        urlsplit(step.official_url).hostname
+        for step in plan.steps
+        if step.official_url
+    }
+    assert official_hosts == {"dmv.ny.gov", "www.nj.gov"}
+    lookalike_host = urlsplit("https://www.nj.gov.attacker.example/mvc").hostname
+    assert lookalike_host != "www.nj.gov"
     assert any("await maintainer human signoff" in warning for warning in plan.warnings)
     assert all(step.requires_confirmation for step in plan.steps if step.verified_as_of)
     assert [step.order for step in plan.steps] == sorted(step.order for step in plan.steps)

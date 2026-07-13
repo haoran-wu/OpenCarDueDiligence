@@ -11,9 +11,13 @@ coverage/
 __pycache__/
 *.py[cod]
 *.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
 *.artifacts.key
 *.key
 *.db-journal
+*.db-wal
+*.db-shm
 .venv/
 .mypy_cache/
 .ruff_cache/

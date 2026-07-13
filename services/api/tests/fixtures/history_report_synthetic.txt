@@ -1,0 +1,22 @@
+# Wholly synthetic parser fixture. It contains no text copied from a provider report.
+01/10/2014
+Synthetic ownership metadata without an odometer value
+Annual driving estimate: 15,000 miles per year
+Date Mileage Source Comments
+05/02/2014 13,000 Synthetic state record
+Title record updated
+Registration record renewed
+08/16/2014 Synthetic service source
+Vehicle serviced
+02/09/2016 34,366 Synthetic service source
+Vehicle serviced
+03/09/2018 68,671 Synthetic inspection source
+Safety inspection passed
+Emissions inspection failed
+Emissions inspection passed
+03/09/2018 68,777 Synthetic registration source
+Registration record renewed
+Warranty reference date: 09/23/2012
+Report generated: 07/10/2026
+Warranty limit: 50,000 miles
+Summary mileage reference as of 07/14/2025: 133,250 miles

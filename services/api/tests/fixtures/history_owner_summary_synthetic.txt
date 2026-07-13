@@ -1,0 +1,6 @@
+# Wholly synthetic parser fixture. It contains no text copied from a provider report.
+7 Previous Owners
+
+Synthetic comparison columns  Owners 1-5  Owner 6  Owner 7
+Synthetic title columns  Owners 1-5  Owner 6  Owner 7
+Synthetic ownership columns  Owners 1-5  Owner 6  Owner 7
