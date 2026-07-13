@@ -17,11 +17,11 @@ ENV NEXT_PUBLIC_OCDD_API_URL=${NEXT_PUBLIC_OCDD_API_URL} \
     NEXT_TELEMETRY_DISABLED=1
 
 COPY --from=dependencies /app/node_modules ./node_modules
-COPY --from=dependencies /app/apps ./apps
-COPY --from=dependencies /app/packages ./packages
 COPY package.json package-lock.json ./
 COPY apps/web ./apps/web
-RUN npm --workspace @ocdd/web run build
+COPY packages/contracts ./packages/contracts
+RUN npm --workspace @ocdd/contracts run build \
+    && npm --workspace @ocdd/web run build
 
 FROM node:20-alpine AS runner
 WORKDIR /app
