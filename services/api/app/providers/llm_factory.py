@@ -1,4 +1,4 @@
-"""Environment factory for the two optional non-OpenAI language adapters."""
+"""Environment factory for the optional local Ollama language adapter."""
 
 from __future__ import annotations
 
@@ -7,30 +7,27 @@ from collections.abc import Mapping
 
 import httpx
 
-from .anthropic import AnthropicLLMProvider
 from .llm_common import GroundedLLMProvider, LLMProviderConfigurationError
 from .ollama import DEFAULT_OLLAMA_BASE_URL, OllamaLLMProvider
 
 
-def create_optional_non_openai_llm_provider(
+def create_optional_local_llm_provider(
     provider: str | None = None,
     *,
     environ: Mapping[str, str] | None = None,
     transport: httpx.AsyncBaseTransport | None = None,
 ) -> GroundedLLMProvider | None:
-    """Build an explicitly selected adapter; no selection means no LLM call."""
+    """Build the explicitly selected free local adapter.
+
+    No selection means no LLM call.  The deterministic application remains
+    fully functional without Ollama or any model download.
+    """
 
     env = os.environ if environ is None else environ
     selected = (provider if provider is not None else env.get("OCDD_LLM_PROVIDER", ""))
     selected = selected.strip().lower()
     if selected in {"", "none", "disabled"}:
         return None
-    if selected == "anthropic":
-        return AnthropicLLMProvider(
-            api_key=env.get("ANTHROPIC_API_KEY", ""),
-            model=env.get("OCDD_ANTHROPIC_MODEL", ""),
-            transport=transport,
-        )
     if selected == "ollama":
         return OllamaLLMProvider(
             model=env.get("OCDD_OLLAMA_MODEL", ""),
@@ -39,5 +36,5 @@ def create_optional_non_openai_llm_provider(
             transport=transport,
         )
     raise LLMProviderConfigurationError(
-        "non-OpenAI LLM provider must be 'anthropic', 'ollama', or disabled"
+        "local LLM provider must be 'ollama' or disabled"
     )

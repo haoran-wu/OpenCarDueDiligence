@@ -8,10 +8,14 @@ Every provider or data pack must declare:
 
 - origin and retrieval date;
 - license and redistribution permission;
+- access cost, limited to `free` or `user-supplied-artifact` in the official
+  provider registry;
 - retention and credential policy;
 - whether its values are asking prices, transaction prices, estimates, or
   anecdotal reports;
 - the human review date for legal, DMV, safety, and repair guidance.
 
-User-provided reports are parsed for that user's case only. NHTSA model-level
-recall results do not prove that a specific VIN has received a remedy.
+User-provided reports are parsed for that user's case only. They are optional:
+the project does not sell reports, collect a referral fee, or require a paid
+data source. NHTSA model-level recall results do not prove that a specific VIN
+has received a remedy.

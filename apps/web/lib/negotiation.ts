@@ -93,6 +93,14 @@ export function calculateNegotiation(input: NegotiationRequest): NegotiationResp
     };
   }
 
+  if (
+    input.asking_price === undefined
+    || input.market_baseline === undefined
+    || input.all_in_budget === undefined
+  ) {
+    throw new Error("asking price, market baseline, and all-in budget are required for price-offer phases");
+  }
+
   const rate = reserveRate(input.evidence_coverage);
   const reserve = rate === undefined ? 0 : Math.round(input.market_baseline * rate);
   const adjustments = input.adjustments

@@ -1,12 +1,15 @@
-"""Stable plugin protocols for BYO-credential providers.
+"""Stable plugin protocols for free/open and user-supplied-data providers.
 
-No commercial data source is scraped by the open core. Providers must declare
-license, credential, retention, and redistribution behavior before registration.
+The official distribution never registers a provider that requires payment.
+Providers must declare license, access-cost, credential, retention, and
+redistribution behavior before registration.  A user-supplied artifact may
+have been obtained independently, but OpenCarDueDiligence does not sell it or
+require it for deterministic analysis.
 """
 
 from __future__ import annotations
 
-from typing import Any, Protocol, runtime_checkable
+from typing import Any, Literal, Protocol, runtime_checkable
 
 from pydantic import Field
 
@@ -27,6 +30,7 @@ class PluginMetadata(DomainModel):
     version: str
     license_name: str
     license_url: str | None = None
+    access_cost: Literal["free", "user-supplied-artifact"]
     credential_storage: str
     retention_policy: str
     redistribution: str

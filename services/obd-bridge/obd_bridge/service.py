@@ -61,7 +61,7 @@ def require_token(authorization: Annotated[str | None, Header()] = None) -> None
         raise HTTPException(status_code=401, detail="Invalid local bridge token")
 
 
-app = FastAPI(title="OpenCarDueDiligence OBD Bridge", version="0.1.0")
+app = FastAPI(title="OpenCarDueDiligence OBD Bridge", version="0.1.0-alpha.2")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],

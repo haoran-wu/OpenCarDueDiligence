@@ -4,7 +4,7 @@
 
 1. Subject-vehicle PPI, direct measurements and full-system scan
 2. Original title, official inspection record and VIN-specific invoice
-3. User-provided commercial history report or approved NMVTIS report
+3. User-provided vehicle-history report or approved NMVTIS report
 4. OEM recall, TSB, maintenance schedule and NHTSA data
 5. Listing snapshot, photos and seller statements
 6. Community anecdotes
@@ -19,9 +19,10 @@ license, SHA-256 hash, retention class, and locator. First-party rule and
 knowledge data uses CC BY-SA 4.0 unless a manifest states otherwise.
 
 Third-party data is never assumed redistributable merely because it is on
-GitHub. CARFAX, NMVTIS, proprietary labor guides, paid valuation feeds and
-manufacturer-specific diagnostic text require their own rights or a
-bring-your-own-provider adapter.
+GitHub. The official provider registry accepts only free/open sources or
+artifacts supplied by the user for that user's case. CARFAX, NMVTIS,
+proprietary labor guides, valuation feeds and manufacturer-specific diagnostic
+text require their own rights and are never sold or bundled by this project.
 
 ## Freshness
 
@@ -67,7 +68,7 @@ without such a layer is not a supported public configuration. Local cases use
   a separate sidecar scans every minute, and four minutes of operational buffer
   remain before the configured 60-minute maximum deletion window.
 - The purger has its own container, S3 credentials, heartbeat, healthcheck and
-  restart policy; it does not depend on API, PostgreSQL, Redis, or request
+  restart policy; it does not depend on API, PostgreSQL, Valkey, or request
   traffic. Its unhealthy state or an object-store outage must be alerted as a
   retention incident. Standard S3/MinIO lifecycle expiration is day-granular,
   so a bucket lifecycle rule may be a defense-in-depth orphan fallback but
@@ -108,7 +109,7 @@ a separately trusted ingress. The reference Uvicorn command disables proxy
 headers; enabling them requires an explicit trusted proxy allowlist. Because
 process memory is not shared, this guard
 does not aggregate across workers or replicas. Every public multi-worker or
-multi-replica deployment must enforce an additional distributed Redis-backed
+multi-replica deployment must enforce an additional distributed Valkey-backed
 gateway/WAF limit; the in-process limiter is only the single-instance reference
 backstop.
 

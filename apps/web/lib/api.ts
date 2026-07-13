@@ -8,6 +8,7 @@ import type {
   TransactionContextInput,
   TransactionPlan,
   VehicleSpec,
+  VinDecodeResponse,
 } from "./types";
 import { caseRecordFromApi } from "./case-record";
 import { accessTokenMap, caseAccessFor, rememberCaseAccess } from "./case-access";
@@ -64,6 +65,14 @@ async function apiFetch<T>(path: string, init?: RequestInit, access?: CaseAccess
   return (await apiFetchWithResponse<T>(path, init, access)).data;
 }
 
+type ApiVehicleSpec = Omit<VehicleSpec, "production_date" | "fuel_type" | "body_style"> & {
+  productionDate?: string;
+  fuelType?: string;
+  bodyStyle?: string;
+};
+
+type ApiVinDecodeResponse = Omit<VinDecodeResponse, "vehicle"> & { vehicle: ApiVehicleSpec };
+
 export const api = {
   health() {
     return apiFetch<{ status: string; version: string; deploymentMode: string }>("/health");
@@ -99,6 +108,24 @@ export const api = {
       const accessToken = response.headers.get("X-OCDD-Case-Token") || undefined;
       rememberCaseAccess(created.id, accessToken);
       return { case: created, accessToken };
+    });
+  },
+
+  decodeVin(vin: string, modelYear?: number) {
+    return apiFetch<ApiVinDecodeResponse>("/v1/vehicles/decode-vin", {
+      method: "POST",
+      body: JSON.stringify({ vin, ...(modelYear ? { modelYear } : {}) }),
+    }).then((response): VinDecodeResponse => {
+      const { productionDate, fuelType, bodyStyle, ...vehicle } = response.vehicle;
+      return {
+        ...response,
+        vehicle: {
+          ...vehicle,
+          production_date: productionDate,
+          fuel_type: fuelType,
+          body_style: bodyStyle,
+        },
+      };
     });
   },
 
@@ -240,10 +267,10 @@ export const api = {
       saleState: input.sale_state,
       titleState: input.title_state,
       sellerType: input.seller_type,
-      titleStatus: input.original_title_present ? "ORIGINAL" : "UNKNOWN",
+      titleStatus: input.title_status,
       lienStatus,
-      identityTitleMatch: input.title_name_matches ? "MATCH" : "UNKNOWN",
-      vinMatch: input.vin_matches ? "MATCH" : "UNKNOWN",
+      identityTitleMatch: input.identity_title_match,
+      vinMatch: input.vin_match,
       sellerAllowsPpi: input.seller_allows_ppi,
       sellerAllowsBillOfSale: input.seller_allows_bill_of_sale,
       sellerWillDiscloseOdometer: input.seller_discloses_odometer,

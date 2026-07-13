@@ -43,11 +43,12 @@ current-page import / PDF / image / OBD / inspection
 
 The domain API and JSON contracts are identical in both modes.
 
-- Local: SQLite, encrypted filesystem, Redis worker, localhost OBD bridge.
-- Cloud: PostgreSQL, encrypted object storage, Redis worker, managed key
+- Local: SQLite, encrypted filesystem, Valkey worker queue, localhost OBD bridge.
+- Cloud: PostgreSQL, encrypted object storage, Valkey worker queue, managed key
   service, independent transient-object purger. Anonymous structured cases
   expire after seven days.
 
-LLM adapters are downstream of deterministic outputs. Removing all LLM keys
+The optional local Ollama adapter is downstream of deterministic outputs.
+Removing all model configuration
 must not change valuation numbers, transaction hard stops, risk severities, or
 required inspections.

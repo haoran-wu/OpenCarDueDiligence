@@ -73,7 +73,9 @@ confirm a defect, reduce value, or authorize a legal transaction step.
 
 Do not copy proprietary diagnostic descriptions, labor times, prices, or paid
 report prose into source files or fixtures. A provider plugin must declare its
-credential, retention, license, and redistribution behavior.
+access cost, credential, retention, license, and redistribution behavior. The
+official registry accepts only `free` or `user-supplied-artifact`; do not add a
+provider that requires a subscription, purchase, referral, or paid API key.
 
 ## Privacy
 
@@ -94,11 +96,10 @@ modified:
   file-specific manifest says otherwise;
 - documentation: the repository license unless the file says otherwise.
 
-A public pull request does not silently transfer copyright or grant additional
-proprietary relicensing rights. If maintainers want to include an external
-contribution in a separately licensed commercial distribution, they must first
-obtain an explicit contributor agreement for that contribution. Contributors
-must have the right to submit everything they include.
+A public pull request does not silently transfer copyright or grant
+proprietary relicensing rights. The official project does not seek contributor
+agreements for a closed or paid edition. Contributors must have the right to
+submit everything they include.
 
 ## Review expectations
 

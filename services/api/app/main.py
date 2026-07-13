@@ -81,6 +81,7 @@ from .models import (
     ListingsImportRequest,
     ListingsImportResponse,
     ListingWatchlistResponse,
+    ModuleCoverage,
     NegotiationRequest,
     NegotiationState,
     OCDDImportRequest,
@@ -329,6 +330,7 @@ def create_app(
     artifact_request_max_bytes: int | None = None,
     cloud_case_create_limit_per_minute: int | None = None,
     cloud_artifact_upload_limit_per_minute: int | None = None,
+    cloud_vin_decode_limit_per_minute: int | None = None,
     case_lease_ttl_seconds: float | None = None,
     case_lease_wait_seconds: float | None = None,
     allow_cloud_artifact_fallback: bool | None = None,
@@ -388,6 +390,10 @@ def create_app(
         cloud_artifact_upload_limit_per_minute = int(
             os.getenv("OCDD_CLOUD_ARTIFACT_UPLOAD_PER_MINUTE", "20")
         )
+    if cloud_vin_decode_limit_per_minute is None:
+        cloud_vin_decode_limit_per_minute = int(
+            os.getenv("OCDD_CLOUD_VIN_DECODE_PER_MINUTE", "30")
+        )
     if case_lease_ttl_seconds is None:
         case_lease_ttl_seconds = float(os.getenv("OCDD_CASE_LEASE_TTL_SECONDS", "300"))
     if case_lease_wait_seconds is None:
@@ -401,6 +407,7 @@ def create_app(
     if (
         cloud_case_create_limit_per_minute < 1
         or cloud_artifact_upload_limit_per_minute < 1
+        or cloud_vin_decode_limit_per_minute < 1
     ):
         raise ValueError("cloud per-minute rate limits must be positive")
     if case_lease_ttl_seconds <= 0 or case_lease_wait_seconds < 0:
@@ -447,7 +454,7 @@ def create_app(
 
     api = FastAPI(
         title="OpenCarDueDiligence API",
-        version="0.1.0",
+        version="0.1.0-alpha.2",
         description=(
             "Evidence-backed US used-car due diligence. Deterministic rules calculate findings; "
             "LLMs, when configured, may explain but never override gates."
@@ -500,6 +507,7 @@ def create_app(
     api.state.cloud_artifact_upload_limit_per_minute = (
         cloud_artifact_upload_limit_per_minute
     )
+    api.state.cloud_vin_decode_limit_per_minute = cloud_vin_decode_limit_per_minute
     api.state.case_lease_ttl_seconds = case_lease_ttl_seconds
     api.state.case_lease_wait_seconds = case_lease_wait_seconds
     api.state.rate_limiter = InMemoryRateLimiter()
@@ -530,6 +538,9 @@ def create_app(
             elif request.method == "POST" and ARTIFACT_UPLOAD_PATH_RE.fullmatch(path):
                 rate_scope = "artifact_upload"
                 rate_limit = request.app.state.cloud_artifact_upload_limit_per_minute
+            elif request.method == "POST" and path == "/v1/vehicles/decode-vin":
+                rate_scope = "vin_decode"
+                rate_limit = request.app.state.cloud_vin_decode_limit_per_minute
 
             rate_response: Response | None = None
             if rate_scope is not None:
@@ -950,10 +961,12 @@ def create_app(
             content_sha256=digest,
             observed_at=payload.scanned_at,
         )
-        codes = (
-            ", ".join(item.code for item in payload.dtcs)
-            or "No generic powertrain DTC reported"
-        )
+        if payload.dtcs:
+            codes = ", ".join(item.code for item in payload.dtcs)
+        elif payload.module_coverage.get("powertrain") == ModuleCoverage.SCANNED:
+            codes = "No generic powertrain DTC reported in this scan"
+        else:
+            codes = "No generic powertrain DTC scan data"
         evidence = Evidence(
             source_id=source.id,
             kind=EvidenceKind.OBD_SCAN,

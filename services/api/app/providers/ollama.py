@@ -45,6 +45,7 @@ class OllamaLLMProvider(GroundedLLMProvider):
         version="1.0.0",
         license_name="Ollama API; selected model license varies",
         license_url="https://docs.ollama.com/api/introduction",
+        access_cost="free",
         credential_storage=(
             "local API needs no credential; optional bearer token is accepted in memory "
             "only and is never persisted or logged"

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { caseRecordFromApi } from "../lib/case-record";
+import { caseRecordFromApi, hasGenericPowertrainCoverage } from "../lib/case-record";
 
 function baseCase(overrides: Record<string, unknown> = {}) {
   return {
@@ -21,11 +21,18 @@ function baseCase(overrides: Record<string, unknown> = {}) {
 }
 
 describe("API case to UI record", () => {
+  it("does not treat an ABS-only scan as generic powertrain DTC coverage", () => {
+    expect(hasGenericPowertrainCoverage(["ABS"])).toBe(false);
+    expect(hasGenericPowertrainCoverage(["BODY", "SRS"])).toBe(false);
+    expect(hasGenericPowertrainCoverage(["POWERTRAIN"])).toBe(true);
+    expect(hasGenericPowertrainCoverage(["Generic powertrain"])).toBe(true);
+  });
+
   it("keeps every unchecked area unknown instead of borrowing demo passes", () => {
     const record = caseRecordFromApi(baseCase());
 
     expect(record.name).toBe("2014 MINI Cooper S");
-    expect(record.listing.asking_price).toBe(0);
+    expect(record.listing.asking_price).toBeUndefined();
     expect(record.inspections.flatMap((stage) => stage.checks).every((check) => check.status === "unknown")).toBe(true);
     expect(record.diagnostics.readiness).toBe("unknown");
     expect(record.diagnostics.not_covered).toEqual(expect.arrayContaining(["ABS", "SRS"]));

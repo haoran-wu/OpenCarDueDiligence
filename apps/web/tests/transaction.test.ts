@@ -11,9 +11,9 @@ const readyContext = (overrides: Partial<TransactionContextInput> = {}): Transac
   sale_state: "NY",
   title_state: "NY",
   seller_type: "private",
-  title_name_matches: true,
-  vin_matches: true,
-  original_title_present: true,
+  title_status: "ORIGINAL",
+  identity_title_match: "MATCH",
+  vin_match: "MATCH",
   seller_allows_ppi: true,
   seller_allows_bill_of_sale: true,
   seller_discloses_odometer: true,
@@ -39,6 +39,17 @@ describe("local transaction gate semantics", () => {
     const plan = buildLocalTransactionPlan(readyContext({ seller_allows_ppi: false }), "en");
     expect(plan.decision).toBe("STOP");
     expect(plan.hard_gates).toContainEqual(expect.objectContaining({ id: "ppi", status: "blocked" }));
+  });
+
+  it("stops on a known title identity or VIN mismatch", () => {
+    expect(buildLocalTransactionPlan(readyContext({ identity_title_match: "MISMATCH" }), "en").decision).toBe("STOP");
+    expect(buildLocalTransactionPlan(readyContext({ vin_match: "MISMATCH" }), "en").decision).toBe("STOP");
+  });
+
+  it("stops on a missing, altered, or already-assigned title", () => {
+    for (const title_status of ["MISSING", "ALTERED", "ALREADY_ASSIGNED"] as const) {
+      expect(buildLocalTransactionPlan(readyContext({ title_status }), "en").decision).toBe("STOP");
+    }
   });
 
   it("reaches BUY_CANDIDATE only after every hard gate is satisfied", () => {

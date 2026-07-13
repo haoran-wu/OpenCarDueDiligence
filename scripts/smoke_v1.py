@@ -4,7 +4,7 @@
 This exercises the public FastAPI contract in-process: case creation, a listing
 snapshot, generic OBD evidence, a PPI session, analysis/valuation, a traceable
 negotiation draft, and both blocked and legal NJ-buyer/NY-title transport paths.
-It does not require Redis, Docker, an LLM, paid data, or network access.
+It does not require Valkey, Docker, an LLM, paid data, or network access.
 """
 
 from __future__ import annotations

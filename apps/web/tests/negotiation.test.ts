@@ -15,9 +15,6 @@ describe("deterministic negotiation boundary", () => {
     const result = calculateNegotiation({
       phase: "initial_contact",
       language: "en",
-      asking_price: 0,
-      market_baseline: 1,
-      all_in_budget: 1,
       evidence_coverage: 0,
       adjustments: [],
     });

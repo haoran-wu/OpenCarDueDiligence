@@ -1,6 +1,6 @@
 {
   "name": "@ocdd/web",
-  "version": "0.1.0",
+  "version": "0.1.0-alpha.2",
   "private": true,
   "license": "AGPL-3.0-or-later",
   "repository": {
@@ -16,7 +16,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@ocdd/contracts": "0.1.0",
+    "@ocdd/contracts": "0.1.0-alpha.2",
     "next": "^15.5.7",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"

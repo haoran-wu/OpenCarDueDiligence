@@ -16,6 +16,10 @@ import { createInspectionTemplate } from "./inspection-checklist";
 
 type UnknownRecord = Record<string, unknown>;
 
+export function hasGenericPowertrainCoverage(coverage: string[]): boolean {
+  return coverage.some((item) => item.trim().toLowerCase().includes("powertrain"));
+}
+
 const riskRank: Record<RiskLevel, number> = {
   unknown: 0,
   low: 1,
@@ -105,8 +109,8 @@ function maxFindingLevel(findings: RiskFinding[], categories: RiskFinding["categ
 }
 
 function makeRiskAxes(findings: RiskFinding[], coverage: number, valuation: ValuationResult): RiskAxis[] {
-  const priceLevel: RiskLevel = valuation.market_median === undefined ? "unknown" : (valuation.asking_price || 0) <= valuation.market_median ? "low" : valuation.q3 !== undefined && (valuation.asking_price || 0) > valuation.q3 ? "high" : "moderate";
-  const priceNote = valuation.market_median === undefined ? "No usable market range yet." : `Asking price compared with ${valuation.market_label}; ${valuation.sample_count} admitted comparable(s).`;
+  const priceLevel: RiskLevel = valuation.market_median === undefined || valuation.asking_price === undefined ? "unknown" : valuation.asking_price <= valuation.market_median ? "low" : valuation.q3 !== undefined && valuation.asking_price > valuation.q3 ? "high" : "moderate";
+  const priceNote = valuation.market_median === undefined || valuation.asking_price === undefined ? "No usable asking-price comparison yet." : `Asking price compared with ${valuation.market_label}; ${valuation.sample_count} admitted comparable(s).`;
   const evidenceLevel: RiskLevel = coverage >= 85 ? "low" : coverage >= 65 ? "moderate" : coverage >= 40 ? "high" : "unknown";
   return [
     { id: "price", label: "价格吸引力 / Price", level: priceLevel, note: priceNote },
@@ -154,7 +158,7 @@ function makeVehicle(value: unknown): VehicleSpec {
   };
 }
 
-function makeValuation(raw: UnknownRecord, askingPrice: number): ValuationResult {
+function makeValuation(raw: UnknownRecord, askingPrice?: number): ValuationResult {
   const valuation = record(raw.valuation);
   const referenceKind = text(camelOrSnake(valuation, "referenceKind", "reference_kind"));
   return {
@@ -246,7 +250,7 @@ export function caseRecordFromApi(value: unknown): CaseRecord {
   const listings = rows(raw.listings);
   const target = latestTargetListing(listings);
   const vehicle = makeVehicle(raw.vehicle);
-  const askingPrice = number(camelOrSnake(target, "askingPrice", "asking_price")) || 0;
+  const askingPrice = number(camelOrSnake(target, "askingPrice", "asking_price"));
   const coverage = number(camelOrSnake(raw, "coveragePercent", "coverage_percent")) || 0;
   const findings = makeFindings(raw);
   const decision = enumValue<Decision>(raw.decision, ["STOP", "INSPECT", "NEGOTIATE", "BUY_CANDIDATE"], "INSPECT");
@@ -263,6 +267,7 @@ export function caseRecordFromApi(value: unknown): CaseRecord {
     status,
     decision,
     vehicle,
+    all_in_budget: number(camelOrSnake(raw, "allInBudget", "all_in_budget")),
     listing: {
       id: text(target.id) || `placeholder-${text(raw.id) || "case"}`,
       source_url: text(camelOrSnake(target, "sourceUrl", "source_url")),

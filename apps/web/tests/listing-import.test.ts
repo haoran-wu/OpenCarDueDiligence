@@ -21,6 +21,7 @@ describe("evidence-honest listing import", () => {
       mileage: "88400",
       seller_type: "private",
       channel: "facebook_marketplace",
+      vin: "1TESTCAR000000001",
       year: "2017",
       make: "Toyota",
       model: "Corolla",
@@ -45,6 +46,7 @@ describe("evidence-honest listing import", () => {
     expect(form.make).toBe("");
     expect(form.model).toBe("");
     expect(form.engine).toBe("");
+    expect(form.vin).toBe("");
     expect(form.copied_configuration).toBe(false);
   });
 
@@ -63,6 +65,7 @@ describe("evidence-honest listing import", () => {
       engine: "1.8L 2ZR-FE I4",
       transmission: "CVT",
       drivetrain: "FWD",
+      vin: "",
     });
   });
 
@@ -131,5 +134,15 @@ describe("evidence-honest listing import", () => {
     });
 
     expect(listingImportVehicle(payload)).not.toHaveProperty("fuel_type");
+  });
+
+  it("normalizes an explicitly entered listing VIN and carries it into the target vehicle", () => {
+    const payload = listingImportPayload({
+      ...targetListingImportForm(record),
+      vin: " 1testcar000000001 ",
+    });
+
+    expect(payload.vin).toBe("1TESTCAR000000001");
+    expect(listingImportVehicle(payload).vin).toBe("1TESTCAR000000001");
   });
 });
