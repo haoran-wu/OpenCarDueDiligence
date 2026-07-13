@@ -18,7 +18,7 @@ jobs:
           python-version: "3.12"
       - name: Compare official DMV source fingerprints
         run: python scripts/check_rule_sources.py | tee rule-source-report.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: rule-source-report
