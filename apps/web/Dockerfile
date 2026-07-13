@@ -1,4 +1,4 @@
-FROM node:20-alpine AS dependencies
+FROM node:26-alpine AS dependencies
 WORKDIR /app
 
 COPY package.json package-lock.json ./
@@ -8,7 +8,7 @@ COPY packages/contracts/package.json packages/contracts/package.json
 COPY packages/plugin-sdk/package.json packages/plugin-sdk/package.json
 RUN npm ci --ignore-scripts
 
-FROM node:20-alpine AS builder
+FROM node:26-alpine AS builder
 WORKDIR /app
 ARG NEXT_PUBLIC_OCDD_API_URL=http://localhost:8000
 ARG NEXT_PUBLIC_OCDD_ENABLE_DEMO=false
@@ -23,7 +23,7 @@ COPY packages/contracts ./packages/contracts
 RUN npm --workspace @ocdd/contracts run build \
     && npm --workspace @ocdd/web run build
 
-FROM node:20-alpine AS runner
+FROM node:26-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
