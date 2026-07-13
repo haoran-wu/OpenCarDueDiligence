@@ -49,9 +49,10 @@ still missing.
 3. The BLE bridge must pass the planned real reference-device and vehicle or
    standards-compliant simulator acceptance. Automated tests prove the command
    allowlist and Mode 04/write rejection, not real-radio compatibility.
-4. Both Compose stacks need end-to-end execution on a host with Docker. Static
-   manifest validation and in-process API/browser tests do not replace a real
-   container, PostgreSQL, Redis, and S3-compatible object-store run.
+4. The loopback-only local Compose stack is built, started, health-checked, and
+   torn down in GitHub Actions. The cloud reference stack still needs an
+   end-to-end acceptance run with PostgreSQL, Redis, and an S3-compatible
+   object store; static manifest validation does not replace that test.
 5. A public deployment needs managed KMS, TLS, secret rotation, a distributed
    rate limiter or gateway, monitoring, backups, and an independently operated
    one-hour artifact purger. Development credentials in the reference Compose
