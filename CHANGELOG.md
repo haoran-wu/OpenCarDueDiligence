@@ -56,7 +56,8 @@ are complete.
 - a release guard that rejects official paid-provider credentials, proprietary
   application licensing, and the former Redis server image;
 - an explicit free-software commitment and provider access-cost metadata;
-- per-case permanent deletion in the buyer UI, guarded by explicit confirmation.
+- per-case deletion from active application storage in the buyer UI, guarded
+  by explicit confirmation and a clear non-forensic-erasure boundary.
 
 ### Changed
 
