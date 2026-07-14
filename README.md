@@ -133,10 +133,19 @@ workbench—not an automatic “paste a listing and receive a buy verdict” age
 The quickstart stack does not upload documents to an OpenCarDueDiligence cloud
 service. Structured cases stay in a local Docker volume; attachment blobs are
 wrapped in AES-GCM envelopes and remain there until the case or Docker volume
-is deleted. Web and API ports remain loopback-only because local mode does not
-have remote-user authentication. `stop` preserves the local volume, while the
-explicit `stop --delete-data` command removes it. Deleting `.env` alone does
-not delete case data.
+is deleted. The local Valkey broker deliberately has no snapshot, AOF, or data
+volume, and the worker decrypts an original only inside a memory-backed `/tmp`
+mount that is cleared on restart. Web and API ports remain loopback-only because
+local mode does not have remote-user authentication. `stop` preserves the case
+volume, while the explicit `stop --delete-data` command removes it. Deleting
+`.env` alone does not delete case data.
+
+Case deletion removes records from active application storage; it is not a
+forensic wipe of SQLite pages, filesystem snapshots, host backups, container
+layers, or already-dispatched work. Operators who ran alpha.2 may also have an
+unused legacy broker volume. After the updated stack is running, remove that
+broker-only volume with `docker volume rm opencarduediligence_redis-data`; this
+does not remove the separate `ocdd-local-data` case volume.
 
 Useful root commands:
 
@@ -179,7 +188,10 @@ docker compose -f docker-compose.cloud.yml up --build
 
 Before any public deployment, replace every database/object-store credential,
 set `NEXT_PUBLIC_OCDD_API_URL` to the browser-reachable HTTPS API origin, and
-use managed KMS. Put the services behind an external reverse proxy/API gateway
+use managed KMS plus encrypted PostgreSQL storage. Define and test retention
+for active rows, WAL, replicas, snapshots, and backups; the application issues
+logical SQL deletes and does not claim forensic database erasure. Put the
+services behind an external reverse proxy/API gateway
 that terminates TLS and provides distributed rate limiting and monitored
 alerts; do not expose these Compose ports directly. The transient-originals
 bucket must have versioning and Object Lock disabled so physical deletion does

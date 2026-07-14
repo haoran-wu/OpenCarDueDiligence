@@ -65,6 +65,9 @@ still missing.
    one-hour S3 artifact purger. Development credentials in the reference
    Compose file are never production credentials, and the S3 deadline must not
    be represented as whole-system erasure until the broker gap is closed.
+   PostgreSQL storage, WAL, replicas, snapshots, and backups also need explicit
+   encryption and retention acceptance; application SQL deletion is not
+   forensic erasure.
 6. Deterministic analysis works without any LLM. The optional local Ollama
    adapter has isolated contract tests but is not yet exposed as an end-to-end
    report or UI route. The official project ships no hosted or paid LLM

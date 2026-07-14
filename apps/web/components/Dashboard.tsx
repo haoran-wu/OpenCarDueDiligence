@@ -111,7 +111,7 @@ const copy = {
     localMode: "演示数据",
     apiMode: "服务已连接",
     localApiMode: "已保存在本机",
-    cloudApiMode: "加密云服务已连接",
+    cloudApiMode: "云服务已连接",
     offlineMode: "服务未连接",
     loading: "正在打开购车工作台…",
     empty: "还没有案件。新建一个案件，然后导入车源、报告或 OBD 扫描。",
@@ -161,7 +161,7 @@ const copy = {
     localMode: "Demo data",
     apiMode: "Service connected",
     localApiMode: "Saved locally",
-    cloudApiMode: "Encrypted cloud connected",
+    cloudApiMode: "Cloud service connected",
     offlineMode: "Service disconnected",
     loading: "Opening your buyer workspace…",
     empty: "No cases yet. Create one, then import a listing, report, or OBD scan.",
@@ -569,9 +569,9 @@ export function Dashboard() {
   const privacyStatus = dataMode === "demo"
     ? { title: language === "zh-CN" ? "演示模式" : "Demo mode", detail: language === "zh-CN" ? "演示数据不会写入真实案件。" : "Demo data is never written to a real case." }
     : deploymentMode === "local"
-      ? { title: language === "zh-CN" ? "本地隐私" : "Local private storage", detail: language === "zh-CN" ? "敏感原件存放在本机加密目录。" : "Sensitive originals stay in the encrypted local store." }
+      ? { title: language === "zh-CN" ? "本地隐私" : "Local private storage", detail: language === "zh-CN" ? "原件保存在本机加密案件目录；解析临时文件仅使用易失性内存空间。" : "Originals stay in the encrypted local case store; parsing uses volatile memory-backed temporary space." }
       : deploymentMode === "cloud"
-        ? { title: language === "zh-CN" ? "云端保留策略" : "Cloud retention", detail: language === "zh-CN" ? "上传原件会在云存储中加密暂存，并按部署方配置的保留策略处理。" : "Uploaded originals are encrypted at rest in cloud storage and handled under the deployment's retention policy." }
+        ? { title: language === "zh-CN" ? "云端保留策略" : "Cloud retention", detail: language === "zh-CN" ? "原件在云对象存储中加密暂存；结构化案件、数据库备份与删除由部署方策略决定。" : "Originals are temporarily encrypted in cloud object storage; structured cases, database backups, and deletion follow the operator's policy." }
         : { title: language === "zh-CN" ? "存储模式未确认" : "Storage mode unconfirmed", detail: language === "zh-CN" ? "连接恢复并确认部署模式前，不要导入敏感材料。" : "Do not import sensitive material until the connection and storage mode are confirmed." };
 
   return (
@@ -652,6 +652,7 @@ export function Dashboard() {
             {activeCase && <button className="button ghost import-button" aria-label={language === "zh-CN" ? "添加车源" : "Add listing"} onClick={() => setImportOpen(true)}><Upload aria-hidden="true" size={17} /><span className="button-label">{language === "zh-CN" ? "添加车源" : "Add listing"}</span></button>}
             {activeCase && nextAction && <button className="button primary next-action" onClick={handlePrimaryAction}><span className="button-label">{nextAction.label}</span><span className="mobile-action-label">{language === "zh-CN" ? "继续" : "Continue"}</span></button>}
           </div>
+          <div className="mobile-storage-status"><LockKeyhole aria-hidden="true" size={14} /><span><strong>{privacyStatus.title}</strong> · {privacyStatus.detail}</span></div>
         </header>
 
         <div className="content">
@@ -671,7 +672,7 @@ export function Dashboard() {
       </main>
 
       {importOpen && activeCase && <ImportModal record={activeCase} language={language} onClose={() => setImportOpen(false)} patchCase={patchActiveCase} notify={notify} setConnected={(value) => setDataMode(value ? "api" : "offline")} isDemo={dataMode === "demo"} onRefresh={() => void refreshActiveCase(true)} />}
-      {archiveOpen && <CaseArchiveModal activeCase={activeCase} dataMode={dataMode} deploymentMode={deploymentMode} language={language} onClose={() => setArchiveOpen(false)} onDeleted={handleCaseDeleted} onImported={(record) => { setCases((items) => [record, ...items.filter((item) => item.id !== record.id)]); setActiveCaseId(record.id); setActiveTab("overview"); setDataMode("api"); setLoadState("ready"); setArchiveOpen(false); notify(language === "zh-CN" ? "加密案件已导入" : "Encrypted case imported"); }} />}
+      {archiveOpen && <CaseArchiveModal activeCase={activeCase} dataMode={dataMode} language={language} onClose={() => setArchiveOpen(false)} onDeleted={handleCaseDeleted} onImported={(record) => { setCases((items) => [record, ...items.filter((item) => item.id !== record.id)]); setActiveCaseId(record.id); setActiveTab("overview"); setDataMode("api"); setLoadState("ready"); setArchiveOpen(false); notify(language === "zh-CN" ? "加密案件已导入" : "Encrypted case imported"); }} />}
       {newCaseOpen && <NewCaseModal language={language} onClose={() => setNewCaseOpen(false)} onCreate={(record) => { setCases((items) => [...items, record]); setActiveCaseId(record.id); setNewCaseOpen(false); setLoadState("ready"); }} setConnected={(value) => setDataMode(value ? "api" : "offline")} isDemo={dataMode === "demo"} />}
       {toast && <div className="toast" role="status">{toast}</div>}
     </div>
@@ -1516,10 +1517,9 @@ function ImportModal({ record, language, onClose, patchCase, notify, setConnecte
   );
 }
 
-function CaseArchiveModal({ activeCase, dataMode, deploymentMode, language, onClose, onImported, onDeleted }: {
+function CaseArchiveModal({ activeCase, dataMode, language, onClose, onImported, onDeleted }: {
   activeCase?: CaseRecord;
   dataMode: DataMode;
-  deploymentMode: DeploymentMode;
   language: Language;
   onClose: () => void;
   onImported: (record: CaseRecord) => void;
@@ -1657,7 +1657,7 @@ function CaseArchiveModal({ activeCase, dataMode, deploymentMode, language, onCl
           </form>
         </div>
         <form className="case-delete-zone" onSubmit={deleteCurrentCase}>
-          <div><h3>{language === "zh-CN" ? "删除当前案件与已存储附件" : "Delete this case and stored artifacts"}</h3><p>{language === "zh-CN" ? "删除结构化案件、已存储附件和当前会话访问凭证；不会影响其他案件。此操作不可撤销。" : "Deletes this structured case, stored artifacts, and its session capability without touching other cases. This cannot be undone."}{deploymentMode === "cloud" && <> {language === "zh-CN" ? "这不代表立即完成全系统擦除；短暂的加密处理信封仍受部署方披露的保留边界约束。" : "This does not claim immediate whole-system erasure; transient encrypted processing envelopes remain subject to the deployment's disclosed retention boundary."}</>}</p></div>
+          <div><h3>{language === "zh-CN" ? "删除当前案件与已存储附件" : "Delete this case and stored artifacts"}</h3><p>{language === "zh-CN" ? "删除结构化案件、已存储附件和当前会话访问凭证；不会影响其他案件。此操作不可撤销。" : "Deletes this structured case, stored artifacts, and its session capability without touching other cases. This cannot be undone."}{dataMode === "api" && <> {language === "zh-CN" ? "这会从应用的活动存储中移除记录，但不宣称取证级擦除数据库页、WAL/备份、容器层或已派发的处理任务；这些仍受部署方披露的保留策略约束。" : "This removes records from active application storage; it does not claim forensic erasure of database pages, WAL/backups, container layers, or already-dispatched processing work. Those remain subject to the deployment's disclosed retention policy."}</>}</p></div>
           <label>{language === "zh-CN" ? "输入 DELETE 确认" : "Type DELETE to confirm"}<input value={deleteConfirmation} onChange={(event) => setDeleteConfirmation(event.target.value)} disabled={!canExport || isBusy} autoComplete="off" /></label>
           {deleteError && <div className="form-error" role="alert">{deleteError}</div>}
           <button className="button danger" disabled={!canExport || isBusy || deleteConfirmation !== "DELETE"}>{deleteBusy ? "…" : language === "zh-CN" ? "删除案件数据" : "Delete case data"}</button>

@@ -231,7 +231,14 @@ def test_endpoint_binds_offer_to_latest_target_refresh(
         price=5750,
         target=True,
     )
-    refreshed["capturedAt"] = "2026-07-14T00:00:00Z"
+    case = client.app.state.repository.get_case(case_id)
+    current_target = max(
+        (item for item in case.listings if item.is_target),
+        key=lambda item: item.captured_at,
+    )
+    refreshed["capturedAt"] = (
+        current_target.captured_at + timedelta(seconds=1)
+    ).isoformat()
     imported = client.post(
         f"/v1/cases/{case_id}/listings/import",
         json={"listings": [refreshed]},

@@ -45,12 +45,15 @@ current-page import / PDF / image / OBD / inspection
 
 The domain API and JSON contracts are identical in both modes.
 
-- Local: SQLite, encrypted filesystem, Valkey worker queue, localhost OBD bridge.
+- Local: SQLite, encrypted attachment filesystem, a volatile Valkey worker
+  queue, a memory-backed worker temporary directory, and localhost OBD bridge.
 - Cloud: PostgreSQL, encrypted object storage, a volatile Valkey worker queue,
   managed key service, and independent transient-object purger. Anonymous
-  structured cases expire after seven days. Public acceptance additionally
-  requires locator-only asynchronous document dispatch or an equivalent
-  verified broker-retention control.
+  structured cases are logically deleted from the active database after seven
+  days. PostgreSQL pages, WAL, replicas, snapshots, and backups remain an
+  operator retention boundary. Public acceptance additionally requires
+  locator-only asynchronous document dispatch or an equivalent verified
+  broker-retention control.
 
 The optional local Ollama adapter is downstream of deterministic outputs.
 Removing all model configuration

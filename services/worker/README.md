@@ -11,16 +11,19 @@ that file in a `finally` block, then encrypts the parsed result before Valkey.
 Original filenames, document plaintext, and extracted page text are never
 Celery arguments, results, or application log messages in plaintext.
 
-The cloud reference Valkey service disables RDB snapshots, AOF, and its data
-volume. Encrypted envelopes can nevertheless remain in volatile broker memory
-until consumed, revoked, or the broker restarts. This is an explicit alpha
-acceptance gap: a public deployment must dispatch only an opaque artifact
-locator (or provide an independently verified equivalent) before claiming an
-end-to-end deletion deadline.
+Both reference Valkey services disable RDB snapshots, AOF, and data volumes.
+Both worker containers mount `/tmp` as memory-backed storage, so a plaintext
+temporary source left by a process crash disappears when the container
+restarts. Encrypted envelopes can nevertheless remain in volatile broker
+memory until consumed, revoked, or the broker restarts. This is an explicit
+alpha acceptance gap: a public deployment must dispatch only an opaque
+artifact locator (or provide an independently verified equivalent) before
+claiming an end-to-end deletion deadline.
 
 The Celery worker extracts text and page locators from transient user uploads,
 computes an integrity hash, and deletes the source after parsing. A periodic
-task removes any source left beyond `OCDD_ARTIFACT_TTL_SECONDS`.
+task scans the same temporary directory and removes any source left beyond
+`OCDD_ARTIFACT_TTL_SECONDS` while the container remains running.
 
 Scanned PDFs are rendered with Poppler and OCRed with Tesseract (`eng+chi_sim`
 by default). If the tools or language data are unavailable, the result stays

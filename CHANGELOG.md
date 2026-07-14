@@ -27,11 +27,12 @@ are complete.
 - market ranges no longer imply that an offer boundary exists; opening, target,
   and ceiling values appear only after those values have actually been
   calculated;
-- the mobile shell now uses one compact application header and a no-overflow
-  bottom workflow bar down to 360 px.
+- the mobile shell now uses one compact application header, an always-visible
+  storage-mode disclosure, and a no-overflow bottom workflow bar down to 360 px;
 - local and cloud deployments now show distinct, truthful storage disclosures;
-  the cloud reference broker disables disk persistence and the documentation
-  scopes its 60-minute deletion target to S3 originals.
+  both reference brokers disable disk persistence, worker plaintext temporary
+  files use memory-backed mounts, and the documentation scopes its 60-minute
+  deletion target to S3 originals.
 
 ### Boundaries
 
@@ -40,6 +41,8 @@ are complete.
   the interface labels that boundary instead.
 - the volatile encrypted OCR queue remains a documented public-cloud
   acceptance gap until task dispatch is locator-only or equivalently verified.
+- case deletion means removal from active application storage, not forensic
+  erasure of database pages, WAL/backups, snapshots, or container layers.
 
 ## 0.1.0-alpha.2 - 2026-07-13
 

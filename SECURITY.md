@@ -37,7 +37,13 @@ case data.
 - S3 cloud originals are transient and target deletion within the configured
   TTL (one hour by default). The alpha reference broker is volatile and carries
   only encrypted OCR envelopes, but does not yet establish a whole-system
-  deletion SLO. Logs must contain opaque case/evidence IDs only.
+  deletion SLO. The local reference broker is likewise volatile, and worker
+  plaintext temporary files live on a memory-backed mount. Logs must contain
+  opaque case/evidence IDs only.
+- Structured cloud cases are logical PostgreSQL records. Application deletion
+  removes active rows but is not forensic erasure of pages, WAL, replicas,
+  snapshots, or backups; public operators must provide storage encryption and
+  an explicit retention/deletion policy for each layer.
 - VIN decode and transaction-context inputs use POST bodies. Do not put a VIN,
   identity comparison, title state, or other transaction context in a URL or
   query string, because access infrastructure commonly retains request URLs.

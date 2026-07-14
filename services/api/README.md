@@ -63,7 +63,10 @@ Deleting a case first deletes every S3 original whose opaque case hash matches,
 then deletes the structured case. If S3 is unavailable, the API returns 503 and
 retains the structured case/capability so deletion can be retried. Object reads
 also fail closed and delete the object if expiry metadata is absent, malformed,
-or elapsed.
+or elapsed. Structured-case deletion is a logical SQL delete from the active
+database. PostgreSQL pages, WAL, replicas, snapshots, and backups follow the
+operator's storage-encryption and retention controls; this API does not claim
+forensic erasure of those layers.
 
 Cloud artifact uploads are capped twice: the ASGI stream is counted before JSON
 parsing (`OCDD_ARTIFACT_REQUEST_MAX_BYTES`, 14,046,552 bytes by default), and
