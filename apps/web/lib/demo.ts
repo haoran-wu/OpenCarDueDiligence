@@ -95,6 +95,7 @@ const samplePlan: TransactionPlan = {
 export const demoCases: CaseRecord[] = [
   {
     id: "demo-corolla-e170",
+    language: "zh-CN",
     name: "Synthetic demo · 2017 Toyota Corolla LE",
     status: "NEGOTIATING",
     decision: "NEGOTIATE",
@@ -201,6 +202,7 @@ export const demoCases: CaseRecord[] = [
   },
   {
     id: "demo-fit",
+    language: "zh-CN",
     name: "2013 Honda Fit Sport",
     status: "NEEDS_DATA",
     decision: "INSPECT",

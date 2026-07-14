@@ -22,10 +22,12 @@ services:
 
   valkey:
     image: valkey/valkey:8.1.8-alpine
-    command: ["valkey-server", "--appendonly", "yes"]
+    # OCR envelopes contain encrypted copies of user documents. The reference
+    # broker is deliberately volatile: no RDB snapshots, no AOF, no host volume.
+    # Public deployments still need locator-only tasks before claiming an
+    # end-to-end deletion SLO.
+    command: ["valkey-server", "--save", "", "--appendonly", "no"]
     restart: unless-stopped
-    volumes:
-      - redis-data:/data
     healthcheck:
       test: ["CMD", "valkey-cli", "ping"]
       interval: 5s
@@ -170,12 +172,23 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     init: true
+    command:
+      - celery
+      - -A
+      - ocdd_worker.celery_app:app
+      - worker
+      - --beat
+      - --loglevel=INFO
     environment:
       OCDD_REDIS_URL: redis://valkey:6379/0
       OCDD_WORKER_ENVELOPE_KEY: ${OCDD_WORKER_ENVELOPE_KEY:-}
       OCDD_WORKER_TMP_DIR: /tmp/ocdd-worker
       OCDD_STORAGE_PATH: /tmp/ocdd-worker
       OCDD_ARTIFACT_TTL_SECONDS: ${OCDD_ARTIFACT_TTL_SECONDS:-3600}
+    # The worker decrypts an original only inside this memory-backed mount.
+    # Crash leftovers disappear when the container restarts.
+    tmpfs:
+      - /tmp:size=256m,mode=1777
     depends_on:
       valkey:
         condition: service_healthy
@@ -213,5 +226,4 @@ services:
 
 volumes:
   postgres-data:
-  redis-data:
   minio-data:

@@ -56,11 +56,18 @@ still missing.
 4. The loopback-only local Compose stack is built, started, health-checked, and
    torn down in GitHub Actions. The cloud reference stack still needs an
    end-to-end acceptance run with PostgreSQL, Valkey, and an S3-compatible
-   object store; static manifest validation does not replace that test.
+   object store; static manifest validation does not replace that test. Its
+   volatile broker still carries encrypted document envelopes, so public cloud
+   acceptance also requires locator-only task dispatch or an independently
+   verified equivalent retention control.
 5. A public deployment needs managed KMS, TLS, secret rotation, a distributed
    rate limiter or gateway, monitoring, backups, and an independently operated
-   one-hour artifact purger. Development credentials in the reference Compose
-   file are never production credentials.
+   one-hour S3 artifact purger. Development credentials in the reference
+   Compose file are never production credentials, and the S3 deadline must not
+   be represented as whole-system erasure until the broker gap is closed.
+   PostgreSQL storage, WAL, replicas, snapshots, and backups also need explicit
+   encryption and retention acceptance; application SQL deletion is not
+   forensic erasure.
 6. Deterministic analysis works without any LLM. The optional local Ollama
    adapter has isolated contract tests but is not yet exposed as an end-to-end
    report or UI route. The official project ships no hosted or paid LLM

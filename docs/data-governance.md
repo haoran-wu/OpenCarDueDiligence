@@ -44,10 +44,16 @@ without such a layer is not a supported public configuration. Local cases use
 ## Case retention
 
 - Local deployments default new cases to `LOCAL`; structured cases and their
-  encrypted local attachments remain until the user deletes them.
+  encrypted local attachments remain until the user deletes them. The local
+  broker is volatile and worker parsing occurs in a memory-backed temporary
+  mount. A case delete removes active records; it does not claim forensic
+  erasure of SQLite pages, host snapshots/backups, or already-dispatched work.
 - Cloud deployments default new cases to `ANONYMOUS`. The structured case is
   assigned `expiresAt` at creation (seven days by default, configured with
-  `OCDD_ANONYMOUS_CASE_TTL_DAYS`) and is physically deleted after that time.
+  `OCDD_ANONYMOUS_CASE_TTL_DAYS`) and is logically deleted from the active
+  database after that time. PostgreSQL storage pages, WAL, replicas, snapshots,
+  and backups follow the deployment operator's documented retention and
+  encryption controls; the application does not claim forensic erasure.
 - `ACCOUNT` must be explicitly requested and never receives an automatic
   expiry. The reference API does not infer login state; a cloud deployment's
   authentication layer is responsible for allowing this value only for an
@@ -79,6 +85,12 @@ without such a layer is not a supported public configuration. Local cases use
   dedicated bucket/prefix and verify these controls before accepting uploads.
 - Purger and health logs disclose only aggregate counts and exception class
   names, never case IDs, object keys, filenames, or object contents.
+- OCR task envelopes are encrypted before entering the reference Valkey
+  broker. That broker has snapshots, AOF, and its data volume disabled, but an
+  envelope can remain in volatile memory until consumed, revoked, or the
+  broker restarts. The 60-minute claim above therefore applies to S3 originals
+  only. Public cloud acceptance requires locator-only task dispatch (or an
+  independently verified equivalent) before claiming whole-system erasure.
 
 ## Cloud ingestion minimization
 

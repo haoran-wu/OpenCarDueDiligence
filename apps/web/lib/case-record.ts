@@ -263,6 +263,7 @@ export function caseRecordFromApi(value: unknown): CaseRecord {
   const highExposure = unresolvedFindings.reduce((sum, finding) => sum + (finding.exposure_high || 0), 0);
   return {
     id: text(raw.id) || "missing-case-id",
+    language: enumValue(raw.language, ["en", "zh-CN"] as const, "en"),
     name,
     status,
     decision,

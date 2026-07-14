@@ -16,6 +16,8 @@ steps without turning an LLM into the source of truth.
 > vehicle. See [`docs/v1-readiness.md`](docs/v1-readiness.md) for the remaining
 > human, hardware, deployment, licensing, and security acceptance gates.
 
+![OpenCarDueDiligence buyer workspace](docs/images/open-car-workspace.png)
+
 The project is useful as a structured second opinion: it keeps an evidence
 ledger, exposes what is still unknown, turns codes and symptoms into tests
 rather than parts verdicts, and produces a reviewable inspection, negotiation,
@@ -130,11 +132,20 @@ workbench—not an automatic “paste a listing and receive a buy verdict” age
 
 The quickstart stack does not upload documents to an OpenCarDueDiligence cloud
 service. Structured cases stay in a local Docker volume; attachment blobs are
-wrapped in AES-GCM envelopes and have a one-hour transient-artifact TTL by
-default. Web and API ports remain loopback-only because local mode does not
-have remote-user authentication. `stop` preserves the local volume, while the
-explicit `stop --delete-data` command removes it. Deleting `.env` alone does
-not delete case data.
+wrapped in AES-GCM envelopes and remain there until the case or Docker volume
+is deleted. The local Valkey broker deliberately has no snapshot, AOF, or data
+volume, and the worker decrypts an original only inside a memory-backed `/tmp`
+mount that is cleared on restart. Web and API ports remain loopback-only because
+local mode does not have remote-user authentication. `stop` preserves the case
+volume, while the explicit `stop --delete-data` command removes it. Deleting
+`.env` alone does not delete case data.
+
+Case deletion removes records from active application storage; it is not a
+forensic wipe of SQLite pages, filesystem snapshots, host backups, container
+layers, or already-dispatched work. Operators who ran alpha.2 may also have an
+unused legacy broker volume. After the updated stack is running, remove that
+broker-only volume with `docker volume rm opencarduediligence_redis-data`; this
+does not remove the separate `ocdd-local-data` case volume.
 
 Useful root commands:
 
@@ -177,7 +188,10 @@ docker compose -f docker-compose.cloud.yml up --build
 
 Before any public deployment, replace every database/object-store credential,
 set `NEXT_PUBLIC_OCDD_API_URL` to the browser-reachable HTTPS API origin, and
-use managed KMS. Put the services behind an external reverse proxy/API gateway
+use managed KMS plus encrypted PostgreSQL storage. Define and test retention
+for active rows, WAL, replicas, snapshots, and backups; the application issues
+logical SQL deletes and does not claim forensic database erasure. Put the
+services behind an external reverse proxy/API gateway
 that terminates TLS and provides distributed rate limiting and monitored
 alerts; do not expose these Compose ports directly. The transient-originals
 bucket must have versioning and Object Lock disabled so physical deletion does
@@ -189,8 +203,18 @@ put this token in URLs, analytics, logs, screenshots, or an unencrypted export.
 The Web app is API-first and shows loading, empty, and error states without
 inserting sample vehicles. `NEXT_PUBLIC_OCDD_ENABLE_DEMO=true` is an explicit
 UI-development-only opt-in. The reference browser client stores capabilities
-by opaque case ID in session storage and sends them only in the request header;
-closing the browser session removes that recovery copy.
+by opaque case ID in session storage. Single-case requests use
+`X-OCDD-Case-Token`; multi-case comparison sends the required
+case-to-capability map in the HTTPS request body. Tokens are never placed in a
+URL, and closing the browser session removes the recovery copy.
+
+The reference cloud Valkey broker disables snapshots and AOF and has no data
+volume, so encrypted OCR envelopes are not deliberately written to disk. An
+envelope can still remain in volatile broker memory until it is consumed,
+revoked, or the broker restarts. This alpha therefore applies the configured
+60-minute deletion target only to S3 transient originals, not whole-system
+erasure. Public cloud acceptance remains blocked on locator-only asynchronous
+processing or an independently verified equivalent retention control.
 
 Development without Docker:
 
