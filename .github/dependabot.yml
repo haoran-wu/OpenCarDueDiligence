@@ -3,53 +3,116 @@ updates:
   - package-ecosystem: npm
     directory: /
     schedule:
-      interval: weekly
-    open-pull-requests-limit: 5
+      interval: monthly
+    open-pull-requests-limit: 2
+    groups:
+      npm-minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # Major upgrades are done by hand after a manual test pass.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: pip
     directory: /services/api
     schedule:
-      interval: weekly
-    open-pull-requests-limit: 3
+      interval: monthly
+    open-pull-requests-limit: 2
+    groups:
+      pip-services-api-minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # Major upgrades are done by hand after a manual test pass.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: pip
     directory: /services/worker
     schedule:
-      interval: weekly
-    open-pull-requests-limit: 3
+      interval: monthly
+    open-pull-requests-limit: 2
+    groups:
+      pip-services-worker-minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # Major upgrades are done by hand after a manual test pass.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: pip
     directory: /services/obd-bridge
     schedule:
-      interval: weekly
-    open-pull-requests-limit: 3
+      interval: monthly
+    open-pull-requests-limit: 2
+    groups:
+      pip-services-obd-bridge-minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # Major upgrades are done by hand after a manual test pass.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: docker
     directory: /
     schedule:
-      interval: weekly
-    open-pull-requests-limit: 3
+      interval: monthly
+    open-pull-requests-limit: 2
+    groups:
+      docker-minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # Major upgrades are done by hand after a manual test pass.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: docker
     directory: /services/api
     schedule:
-      interval: weekly
+      interval: monthly
     open-pull-requests-limit: 2
+    groups:
+      docker-services-api-minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # Major upgrades are done by hand after a manual test pass.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: docker
     directory: /services/worker
     schedule:
-      interval: weekly
+      interval: monthly
     open-pull-requests-limit: 2
+    groups:
+      docker-services-worker-minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # Major upgrades are done by hand after a manual test pass.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: docker
     directory: /apps/web
     schedule:
-      interval: weekly
+      interval: monthly
     open-pull-requests-limit: 2
+    groups:
+      docker-apps-web-minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # Major upgrades are done by hand after a manual test pass.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
-    open-pull-requests-limit: 3
+      interval: monthly
+    open-pull-requests-limit: 2
+    groups:
+      github-actions-minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # Major upgrades are done by hand after a manual test pass.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
